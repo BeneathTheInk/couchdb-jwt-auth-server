@@ -1,0 +1,18 @@
+sudo: false
+language: node_js
+cache:
+  directories:
+    - node_modules
+notifications:
+  email: false
+node_js:
+  - '5'
+before_install:
+  - npm i -g npm@latest
+before_script:
+  - npm run lint
+after_success:
+  - npm run semantic-release
+branches:
+  only:
+    - "master"

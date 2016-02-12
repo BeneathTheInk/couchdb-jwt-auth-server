@@ -1,0 +1,28 @@
+{
+  "name": "couchdb-jwt-auth-server",
+  "description": "A Node.js server for managing CouchDB authentication through JSON Web Tokens.",
+  "author": "Tyler Johnson <tyler@tylerjohnson.me>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BeneathTheInk/couchdb-jwt-auth-server.git"
+  },
+  "main": "index.js",
+  "jsnext:main": "src/index.js",
+  "scripts": {
+    "lint": "jshint src/ test/",
+    "build": "make",
+    "prepublish": "npm run lint && npm run build",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+  },
+  "dependencies": {},
+  "keywords": [],
+  "license": "MIT",
+  "devDependencies": {
+    "babel-preset-es2015-rollup": "~1.1.1",
+    "jshint": "~2.9.1",
+    "rollup": "~0.25.3",
+    "rollup-plugin-babel": "~2.3.9",
+    "tape": "~4.4.0",
+    "semantic-release": "^4.3.5"
+  }
+}
