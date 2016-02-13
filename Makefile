@@ -1,6 +1,6 @@
 BIN = ./node_modules/.bin
 SRC = $(wildcard src/* src/*/*)
-OUT = index.js
+OUT = index.js cli.js
 
 build: $(OUT)
 
@@ -26,9 +26,14 @@ endef
 
 export ROLLUP
 
-$(OUT): src/index.js $(SRC)
+index.js: src/index.js $(SRC)
 	# $< -> $@
 	@node -e "$$ROLLUP" > $@
+
+cli.js: src/cli.js $(SRC)
+	# $< -> $@
+	@echo "#!/usr/bin/env node" > $@
+	@node -e "$$ROLLUP" >> $@
 
 clean:
 	rm $(OUT)

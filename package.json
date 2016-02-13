@@ -14,7 +14,12 @@
     "prepublish": "npm run lint && npm run build",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
-  "dependencies": {},
+  "dependencies": {
+    "body-parser": "~1.15.0",
+    "express": "~4.13.4",
+    "jsonwebtoken": "~5.5.4",
+    "pouchdb-couchdb": "~0.2.0"
+  },
   "keywords": [],
   "license": "MIT",
   "devDependencies": {
