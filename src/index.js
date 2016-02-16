@@ -1,57 +1,61 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import CouchPouch from "pouchdb-couchdb";
+import couchRequest from "pouchdb/extras/ajax";
+import parseOptions from "./parse-options";
 import bodyParser from "body-parser";
-import {createClient} from "redis";
 import crypto from "crypto";
 import {pick} from "lodash";
-
-let CouchDB = CouchPouch("http://admin:12345@localhost:5984");
-CouchDB.on("ready", () => console.log("couchdb ready"));
-
-let redis = createClient();
-redis.on("ready", () => console.log("redis ready"));
+import RedisStore from "./redis-store";
+import MemoryStore from "./memory-store";
+import CouchStore from "./couch-store";
 
 let app = express();
 export default app;
 
-app.disable("x-powered-by");
+let couchOptions;
+let sessionStore;
+let ready = null;
 
-// auth server details
-// app.get("/", function(/* req, res, next */) {
-//
-// });
+app.setup = function() {
+	if (ready) return ready;
+	couchOptions = parseOptions(app.get("couchdb"));
+
+	let sessOpts = app.get("session") || {};
+	let store = sessOpts.store;
+	delete sessOpts.store;
+
+	if (!store) store = "memory";
+	if (typeof store === "string") {
+		store = store === "redis" ? RedisStore :
+			store === "memory" ? MemoryStore :
+			store === "couchdb" || store === "couch" ? CouchStore :
+			require(store);
+	}
+
+	if (typeof store === "function") {
+		store = new store(sessOpts, couchOptions);
+	}
+
+	sessionStore = store;
+
+	return (ready = Promise.all([
+		sessionStore.load()
+	]));
+};
+
+// force the app to wait for everything to load
+app.use(function(req, res, next) {
+	app.setup().then(() => next(), next);
+});
+
+app.disable("x-powered-by");
 
 const jsonParser = bodyParser.json();
 const urlParser = bodyParser.urlencoded({ extended: true });
 
 function generateSession() {
-	let session = crypto.randomBytes(16).toString("hex");
-
-	return new Promise((resolve, reject) => {
-		redis.setex("jwt:" + session, 14*24*60*60,  Date.now(), (err) => {
-			if (err) reject(err);
-			else resolve();
-		});
-	}).then(() => session);
-}
-
-function validateSession(session) {
-	return new Promise((resolve, reject) => {
-		redis.exists("jwt:" + session, (err, res) => {
-			if (err) reject(err);
-			else resolve(res ? true : false);
-		});
-	});
-}
-
-function removeSession(session) {
-	return new Promise((resolve, reject) => {
-		redis.del("jwt:" + session, (err, res) => {
-			if (err) reject(err);
-			else resolve(res ? true : false);
-		});
-	});
+	let sid = crypto.randomBytes(16).toString("hex");
+	return Promise.resolve(sessionStore.add(sid)).then(() => sid);
 }
 
 function generateToken({ name, roles }, session) {
@@ -73,7 +77,7 @@ function validateToken(token, ignoreExpiration=false) {
 			else resolve(data);
 		});
 	}).then(data => {
-		return validateSession(data.session).then(valid => {
+		return Promise.resolve(sessionStore.exists(data.session)).then(valid => {
 			if (!valid) throw new Error("Invalid Session.");
 			return data;
 		});
@@ -83,12 +87,14 @@ function validateToken(token, ignoreExpiration=false) {
 // main route
 app.route("/session")
 
+// extract token from header information
 .all(function(req, res, next) {
 	let auth = req.get("Authorization") || "";
-	if (!auth) return next();
 
-	let m = auth.trim().match(/^Bearer\s*(.*)/);
-	if (m) req.jwt = m[1];
+	if (auth) {
+		let m = auth.trim().match(/^Bearer\s*(.*)/);
+		if (m) req.jwt = m[1];
+	}
 
 	next();
 })
@@ -108,19 +114,22 @@ app.route("/session")
 
 // sign in
 .post(jsonParser, urlParser, function(req, res, next) {
-	CouchDB.request({
+	couchRequest({
 		method: "GET",
-		url: "/_session",
-		headers: {
-			Authorization: CouchPouch.utils.basicAuthHeader(req.body)
+		url: couchOptions.baseUrl + "_session",
+		auth: {
+			username: req.body.username || req.body.name,
+			password: req.body.password || req.body.pass
 		}
-	}).then((resp) => {
+	}, (err, resp) => {
+		if (err) return next(err);
+
 		return generateSession().then(sess => {
 			return generateToken(resp.userCtx, sess);
 		}).then((token) => {
 			res.type("application/jwt").send(token);
-		});
-	}).catch(next);
+		}).catch(next);
+	});
 })
 
 // renew token
@@ -135,7 +144,7 @@ app.route("/session")
 // sign out
 .delete(function(req, res, next) {
 	validateToken(req.jwt, true).then(data => {
-		return removeSession(data.session);
+		return Promise.resolve(sessionStore.remove(data.session));
 	}).then(() => {
 		res.send({ ok: true });
 	}).catch(next);
@@ -144,4 +153,8 @@ app.route("/session")
 // create new user
 app.post("/signup", function(/* req, res, next */) {
 
+});
+
+app.use(function(req, res) {
+	res.sendStatus(404);
 });

@@ -19,7 +19,9 @@
 		"express": "~4.13.4",
 		"jsonwebtoken": "~5.5.4",
 		"lodash": "~4.3.0",
-		"pouchdb-couchdb": "~0.2.1",
+		"minimist": "~1.2.0",
+		"ms": "~0.7.1",
+		"pouchdb": "~5.2.1",
 		"redis": "~2.4.2"
 	},
 	"keywords": [],
