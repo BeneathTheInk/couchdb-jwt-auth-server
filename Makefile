@@ -1,36 +1,16 @@
 BIN = ./node_modules/.bin
 SRC = $(wildcard src/* src/*/*)
-OUT = index.js
 
-build: $(OUT)
+build: index.js cli.js
 
-define ROLLUP
-require("rollup").rollup({
-	entry: "$<",
-	plugins: [
-		require("rollup-plugin-babel")({
-			exclude: 'node_modules/**'
-		})
-	]
-}).then(function(bundle) {
-	var result = bundle.generate({
-		format: "cjs"
-	});
-	process.stdout.write(result.code);
-}).catch(function(e) {
-	process.nextTick(function() {
-		throw e;
-	});
-});
-endef
+index.js: src/index.js $(SRC)
+	$(BIN)/rollup $< -c > $@
 
-export ROLLUP
-
-$(OUT): src/index.js $(SRC)
-	# $< -> $@
-	@node -e "$$ROLLUP" > $@
+cli.js: src/cli.js $(SRC)
+	echo "#!/usr/bin/env node" > $@
+	$(BIN)/rollup $< -c >> $@
 
 clean:
-	rm $(OUT)
+	rm index.js cli.js
 
-.PHONY: build
+.PHONY: build clean
