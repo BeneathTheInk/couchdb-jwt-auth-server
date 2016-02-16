@@ -33,7 +33,9 @@ var app = require("./");
 
 [
 	"couchdb",
-	"session"
+	"session",
+	"secret",
+	"expire"
 ].forEach(key => {
 	if (has(argv, key)) app.set(key, argv[key]);
 });

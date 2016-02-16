@@ -17,12 +17,12 @@
 	"dependencies": {
 		"body-parser": "~1.15.0",
 		"express": "~4.13.4",
+		"global-paths": "~0.1.2",
 		"jsonwebtoken": "~5.5.4",
 		"lodash": "~4.3.0",
 		"minimist": "~1.2.0",
 		"ms": "~0.7.1",
-		"pouchdb": "~5.2.1",
-		"redis": "~2.4.2"
+		"pouchdb": "~5.2.1"
 	},
 	"keywords": [],
 	"license": "MIT",
@@ -33,8 +33,5 @@
 		"rollup-plugin-babel": "~2.3.9",
 		"tape": "~4.4.0",
 		"semantic-release": "^4.3.5"
-	},
-	"optionalDependencies": {
-		"hiredis": "~0.4.1"
 	}
 }

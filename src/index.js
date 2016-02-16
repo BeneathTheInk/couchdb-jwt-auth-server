@@ -5,9 +5,9 @@ import parseOptions from "./parse-options";
 import bodyParser from "body-parser";
 import crypto from "crypto";
 import {pick} from "lodash";
-import RedisStore from "./redis-store";
 import MemoryStore from "./memory-store";
 import CouchStore from "./couch-store";
+import globalPaths from "global-paths";
 
 let app = express();
 export default app;
@@ -18,29 +18,48 @@ let ready = null;
 
 app.setup = function() {
 	if (ready) return ready;
-	couchOptions = parseOptions(app.get("couchdb"));
 
-	let sessOpts = app.get("session") || {};
-	let store = sessOpts.store;
-	delete sessOpts.store;
+	return (ready = Promise.resolve().then(() => {
+		if (!app.get("secret")) {
+			throw new Error("Missing JWT secret.");
+		}
 
-	if (!store) store = "memory";
-	if (typeof store === "string") {
-		store = store === "redis" ? RedisStore :
-			store === "memory" ? MemoryStore :
-			store === "couchdb" || store === "couch" ? CouchStore :
-			require(store);
-	}
+		couchOptions = parseOptions(app.get("couchdb"));
 
-	if (typeof store === "function") {
-		store = new store(sessOpts, couchOptions);
-	}
+		let sessOpts = app.get("session") || {};
+		let store = sessOpts.store;
+		delete sessOpts.store;
 
-	sessionStore = store;
+		if (!store) store = "memory";
+		if (typeof store === "string") {
+			if (store === "memory") store = MemoryStore;
+			else if (store === "couchdb" || store === "couch") store = CouchStore;
+			else {
+				// require under the standard name before trying the actual name
+				try {
+					if (/^\.{0,2}\//.test(store)) throw {};
 
-	return (ready = Promise.all([
-		sessionStore.load()
-	]));
+					[false].concat(globalPaths()).some(p => {
+						try {
+							store = require((p ? p + "/" : "") + "couchdb-jwt-store-" + store);
+							return true;
+						} catch(e) {
+							return false;
+						}
+					});
+				} catch(e) {
+					store = require(store);
+				}
+			}
+		}
+
+		if (typeof store === "function") {
+			store = new store(sessOpts, couchOptions);
+		}
+
+		sessionStore = store;
+		return sessionStore.load();
+	}));
 };
 
 // force the app to wait for everything to load
@@ -60,16 +79,16 @@ function generateSession() {
 
 function generateToken({ name, roles }, session) {
 	return new Promise(resolve => {
-		jwt.sign({ name, roles, session }, "secret", {
+		jwt.sign({ name, roles, session }, app.get("secret"), {
 			algorithms: [ "HS256" ],
-			expiresIn: "5m"
+			expiresIn: app.get("expire") || "5m"
 		}, resolve);
 	});
 }
 
 function validateToken(token, ignoreExpiration=false) {
 	return new Promise((resolve, reject) => {
-		jwt.verify(token, "secret", {
+		jwt.verify(token, app.get("secret"), {
 			algorithms: [ "HS256" ],
 			ignoreExpiration
 		}, function(err, data) {
