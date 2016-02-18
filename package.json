@@ -15,14 +15,14 @@
 		"semantic-release": "semantic-release pre && npm publish && semantic-release post"
 	},
 	"dependencies": {
-		"body-parser": "~1.15.0",
-		"express": "~4.13.4",
-		"global-paths": "~0.1.2",
-		"jsonwebtoken": "~5.5.4",
-		"lodash": "~4.3.0",
-		"minimist": "~1.2.0",
-		"ms": "~0.7.1",
-		"pouchdb": "~5.2.1"
+		"body-parser": "^1.15.0",
+		"express": "^4.13.4",
+		"global-paths": "^0.1.2",
+		"jsonwebtoken": "^5.5.4",
+		"lodash": "4.x",
+		"minimist": "^1.2.0",
+		"ms": "^0.7.1",
+		"pouchdb": "^5.2.1"
 	},
 	"keywords": [],
 	"license": "MIT",
