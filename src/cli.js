@@ -1,5 +1,6 @@
 import minimist from "minimist";
 import {has} from "lodash";
+import help from "./help.txt";
 
 var argv = minimist(process.argv.slice(2), {
 	string: [ ],
@@ -11,7 +12,7 @@ var argv = minimist(process.argv.slice(2), {
 });
 
 if (argv.help) {
-	console.log("halp plz");
+	console.log("  " + help.replace(/\n/g, "\n  "));
 	process.exit(0);
 }
 
