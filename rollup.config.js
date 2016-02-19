@@ -1,15 +1,19 @@
 import babel from "rollup-plugin-babel";
 import string from 'rollup-plugin-string';
 
+let plugins = [
+	string({
+		extensions: [".txt"]
+	})
+];
+
+if (process.env.TARGET !== "es6") {
+	plugins.push(babel({
+		exclude: 'node_modules/**'
+	}));
+}
+
 export default {
 	onwarn: ()=>{},
-	format: "cjs",
-	plugins: [
-		string({
-			extensions: [".txt"]
-		}),
-		babel({
-			exclude: 'node_modules/**'
-		})
-	]
+	plugins: plugins
 };
