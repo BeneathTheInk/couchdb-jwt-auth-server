@@ -169,10 +169,10 @@ app.route("/session")
 	}).catch(next);
 });
 
-// create new user
-app.post("/signup", function(/* req, res, next */) {
-
-});
+// // create new user
+// app.post("/signup", function(/* req, res, next */) {
+//
+// });
 
 app.use(function(req, res) {
 	res.sendStatus(404);
