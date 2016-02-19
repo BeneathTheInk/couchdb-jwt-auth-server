@@ -8,6 +8,9 @@
 	},
 	"main": "index.js",
 	"jsnext:main": "src/index.js",
+	"bin": {
+		"couchdb-jwt": "cli.js"
+	},
 	"scripts": {
 		"lint": "jshint src/ test/",
 		"build": "make",
