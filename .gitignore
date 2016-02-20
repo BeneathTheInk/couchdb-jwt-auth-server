@@ -3,3 +3,4 @@ index.js
 cli.js
 es6.js
 couch-store.js
+memory-store.js

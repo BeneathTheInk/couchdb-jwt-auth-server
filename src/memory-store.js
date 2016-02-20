@@ -1,6 +1,4 @@
-import { has } from 'lodash';
-
-export default class MemoryStore {
+class MemoryStore {
   constructor() {
     this.sessions = {};
 
@@ -12,17 +10,19 @@ It does not scale and sessions are not preserved when the app is restarted.`
     }
   }
 
-  load() {}
-
   add(sid) {
     this.sessions[sid] = true;
   }
 
   exists(sid) {
-    return has(this.sessions, sid);
+    return !!this.sessions[sid];
   }
 
   remove(sid) {
     delete this.sessions[sid];
   }
+}
+
+export default function createMemoryStore() {
+  return new MemoryStore();
 }
