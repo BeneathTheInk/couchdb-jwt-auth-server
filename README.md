@@ -52,6 +52,7 @@ username_claim=name
 ```text
 $ couchdb-jwt [OPTIONS]
 
+--config <file>         A config file with your options. It's a JSON object.
 --couchdb <url>         URL to the CouchDB server that manages users and has
                         couch_jwt_auth installed. This should include CouchDB
                         admin credentials.
@@ -61,6 +62,25 @@ $ couchdb-jwt [OPTIONS]
 --session.store <name>  The library to use for storing session data. There are
                         two built in options: memory and couch. Additional
                         session options can be passed using the dot syntax.
+```
+
+### Config file
+
+If you rather use a config file instead of passing options in the command line, you can just
+create a JSON file, i.e. `config.json`, with the options you want to use like:
+
+```
+{
+  "couchdb": "http://admin:pass@localhost:5984",
+  "secret": "keyboardcat",
+  "session.store": "couch"
+}
+```
+
+And then call it with:
+
+```
+$ couchdb-jwt --config config.json
 ```
 
 ## API Usage

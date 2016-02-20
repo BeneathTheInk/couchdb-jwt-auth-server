@@ -12,6 +12,7 @@ Usage:
 
   $ couchdb-jwt [OPTIONS]
 
+  --config <file>         A config file with your options. It's a JSON object.
   --couchdb <url>         URL to the CouchDB server that manages users and has
                           couch_jwt_auth installed. This should include CouchDB
                           admin credentials.

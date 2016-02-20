@@ -1,6 +1,8 @@
-import minimist from "minimist";
-import {has} from "lodash";
+import { readFileSync } from 'fs';
+import { has } from "lodash";
+import app from "./index";
 import help from "./help.txt";
+import minimist from "minimist";
 
 var argv = minimist(process.argv.slice(2), {
 	string: [ ],
@@ -10,6 +12,10 @@ var argv = minimist(process.argv.slice(2), {
 		v: "version", V: "version"
 	}
 });
+
+if (argv.config) {
+	Object.assign(argv, JSON.parse(readFileSync(argv.config, 'utf8')));
+}
 
 if (argv.help) {
 	console.log("  " + help.replace(/\n/g, "\n  "));
@@ -29,8 +35,6 @@ function panic(e) {
 
 if (argv.production) process.env.NODE_ENV = "production";
 else if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
-
-var app = require("./");
 
 [
 	"couchdb",
