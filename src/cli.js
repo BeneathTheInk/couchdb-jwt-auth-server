@@ -1,55 +1,71 @@
+import { pick } from 'lodash';
 import { readFileSync } from 'fs';
-import { has } from "lodash";
-import app from "./index";
-import help from "./help.txt";
-import minimist from "minimist";
+import createApp from './index';
+import help from './help';
+import minimist from 'minimist';
 
-var argv = minimist(process.argv.slice(2), {
-	string: [ ],
-	boolean: [ "help", "version", "production" ],
-	alias: {
-		h: "help", H: "help",
-		v: "version", V: "version"
-	}
+let argv = minimist(process.argv.slice(2), {
+  string: [ ],
+  boolean: [ 'help', 'version', 'production' ],
+  alias: {
+    h: 'help', H: 'help',
+    v: 'version', V: 'version'
+  }
 });
 
-if (argv.config) {
-	Object.assign(argv, JSON.parse(readFileSync(argv.config, 'utf8')));
-}
-
 if (argv.help) {
-	console.log("  " + help.replace(/\n/g, "\n  "));
-	process.exit(0);
+  console.log('  ' + help.replace(/\n/g, '\n  '));
+  process.exit(0);
 }
 
 if (argv.version) {
-	let pkg = require("./package.json");
-	console.log("%s %s", pkg.name, pkg.version || "edge");
-	process.exit(0);
+  let pkg = require('./package.json');
+  console.log('%s %s', pkg.name, pkg.version || 'edge');
+  process.exit(0);
 }
+
+if (argv.config) {
+  Object.assign(argv, JSON.parse(readFileSync(argv.config, 'utf8')));
+}
+
+process.env.NODE_ENV = argv.production ? 'production' : (process.env.NODE_ENV || 'development');
 
 function panic(e) {
-	console.error(e.stack || e);
-	process.exit(1);
+  console.error(e.stack || e);
+  process.exit(1);
 }
 
-if (argv.production) process.env.NODE_ENV = "production";
-else if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
+const VALID = [
+  'algorithms',
+  'couchdb',
+  'endpoint',
+  'expiresIn',
+  'secret',
+  'storeOptions'
+];
 
-[
-	"couchdb",
-	"session",
-	"secret",
-	"expire"
-].forEach(key => {
-	if (has(argv, key)) app.set(key, argv[key]);
-});
+const { storeType } = argv;
+let createSessionStore;
+if (storeType === 'couch') {
+  createSessionStore = require('./couch-store');
+} else if (storeType === 'memory' || typeof storyType === 'undefined') {
+  createSessionStore = require('./memory-store');
+} else {
+  createSessionStore = require(argv['session.store']);
+}
 
-app.setup().then(() => {
-	let server = app.listen(argv.port || 3000, "127.0.0.1", function() {
-		let addr = server.address();
-		console.log("HTTP server listening at http://%s:%s", addr.address, addr.port);
-	});
+const appOptions = {
+  ...pick(argv, VALID),
+  createSessionStore
+};
 
-	server.on("error", panic);
-}).catch(panic);
+createApp(appOptions).
+  then(app => {
+    const server = app.listen(argv.port || 3000, '127.0.0.1', () => {
+      const addr = server.address();
+      console.log('HTTP server listening at http://%s:%s', addr.address, addr.port);
+    });
+
+    server.on('error', panic);
+  })
+  .catch(panic);

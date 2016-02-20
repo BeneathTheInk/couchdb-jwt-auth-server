@@ -1,4 +1,5 @@
-/node_modules
-/index.js
-/cli.js
-/es6.js
+node_modules
+index.js
+cli.js
+es6.js
+couch-store.js

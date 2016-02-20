@@ -1,179 +1,52 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import couchRequest from "pouchdb/extras/ajax";
-import parseOptions from "./parse-options";
-import bodyParser from "body-parser";
-import crypto from "crypto";
-import {pick} from "lodash";
-import MemoryStore from "./memory-store";
-import CouchStore from "./couch-store";
-import globalPaths from "global-paths";
+import bodyParser from 'body-parser';
+import createAuthenticate from './create-authenticate';
+import createGenerateToken from './create-generate-token';
+import createValidateToken from './create-validate-token';
+import express from 'express';
+import extractJwtFromHeader from './extract-jwt-from-header';
+import generateSession from './generate-session';
+import getCouchOptions from './get-couch-options';
+import info from './info';
+import invariant from 'invariant';
+import login from './login';
+import logout from './logout';
+import renew from './renew';
 
-let app = express();
-export default app;
+export default async function createApp({algorithms=['HS256'], createSessionStore, couchdb, endpoint, expiresIn='5m', secret, storeOptions}) {
+  invariant(algorithms, 'missing algorithms');
+  invariant(couchdb, 'missing couchdb');
+  invariant(createSessionStore, 'missing createSessionStore');
+  invariant(endpoint, 'missing endpoint');
+  invariant(expiresIn, 'missing expiresIn');
+  invariant(secret, 'missing JWT secret');
 
-let couchOptions;
-let sessionStore;
-let ready = null;
+  const app = express();
+  const couchOptions = getCouchOptions(couchdb);
 
-app.setup = function() {
-	if (ready) return ready;
+  // set a few helpers on the app
+  app.authenticate = createAuthenticate(couchOptions.baseUrl).bind(app);
+  app.generateSession = generateSession.bind(app);
+  app.generateToken = createGenerateToken({algorithms, expiresIn, secret}).bind(app);
+  app.validateToken = createValidateToken({algorithms, secret}).bind(app);
 
-	return (ready = Promise.resolve().then(() => {
-		if (!app.get("secret")) {
-			throw new Error("Missing JWT secret.");
-		}
+  // set the session store
+  app.sessionStore = await createSessionStore({
+    ...storeOptions,
+    ...couchOptions
+  });
 
-		couchOptions = parseOptions(app.get("couchdb"));
+  app.disable('x-powered-by');
 
-		let sessOpts = app.get("session") || {};
-		let store = sessOpts.store;
-		delete sessOpts.store;
+  // mount the jwt auth logic
+  app.route(endpoint)
+    .all(extractJwtFromHeader)
+    .delete(logout)
+    .get(info)
+    .post(bodyParser.json(), bodyParser.urlencoded({ extended: true }), login)
+    .put(renew);
 
-		if (!store) store = "memory";
-		if (typeof store === "string") {
-			if (store === "memory") store = MemoryStore;
-			else if (store === "couchdb" || store === "couch") store = CouchStore;
-			else {
-				// require under the standard name before trying the actual name
-				try {
-					if (/^\.{0,2}\//.test(store)) throw {};
+  // default everything else to a 404
+  app.use((req, res) => res.sendStatus(404));
 
-					[false].concat(globalPaths()).some(p => {
-						try {
-							store = require((p ? p + "/" : "") + "couchdb-jwt-store-" + store);
-							return true;
-						} catch(e) {
-							return false;
-						}
-					});
-				} catch(e) {
-					store = require(store);
-				}
-			}
-		}
-
-		if (typeof store === "function") {
-			store = new store(sessOpts, couchOptions);
-		}
-
-		sessionStore = store;
-		return sessionStore.load();
-	}));
-};
-
-// force the app to wait for everything to load
-app.use(function(req, res, next) {
-	app.setup().then(() => next(), next);
-});
-
-app.disable("x-powered-by");
-
-const jsonParser = bodyParser.json();
-const urlParser = bodyParser.urlencoded({ extended: true });
-
-function generateSession() {
-	let sid = crypto.randomBytes(16).toString("hex");
-	return Promise.resolve(sessionStore.add(sid)).then(() => sid);
+  return app;
 }
-
-function generateToken({ name, roles }, session) {
-	return new Promise(resolve => {
-		jwt.sign({ name, roles, session }, app.get("secret"), {
-			algorithms: [ "HS256" ],
-			expiresIn: app.get("expire") || "5m"
-		}, resolve);
-	});
-}
-
-function validateToken(token, ignoreExpiration=false) {
-	return new Promise((resolve, reject) => {
-		jwt.verify(token, app.get("secret"), {
-			algorithms: [ "HS256" ],
-			ignoreExpiration
-		}, function(err, data) {
-			if (err) reject(err);
-			else resolve(data);
-		});
-	}).then(data => {
-		return Promise.resolve(sessionStore.exists(data.session)).then(valid => {
-			if (!valid) throw new Error("Invalid Session.");
-			return data;
-		});
-	});
-}
-
-// main route
-app.route("/session")
-
-// extract token from header information
-.all(function(req, res, next) {
-	let auth = req.get("Authorization") || "";
-
-	if (auth) {
-		let m = auth.trim().match(/^Bearer\s*(.*)/);
-		if (m) req.jwt = m[1];
-	}
-
-	next();
-})
-
-// fetch/verify existing JWT
-.get(function(req, res, next) {
-	validateToken(req.jwt).then(data => {
-		res.send({
-			ok: true,
-			userCtx: pick(data, "name", "roles"),
-			session: data.session,
-			issued: new Date(data.iat * 1000),
-			expires: new Date(data.exp * 1000),
-		});
-	}).catch(next);
-})
-
-// sign in
-.post(jsonParser, urlParser, function(req, res, next) {
-	couchRequest({
-		method: "GET",
-		url: couchOptions.baseUrl + "_session",
-		auth: {
-			username: req.body.username || req.body.name,
-			password: req.body.password || req.body.pass
-		}
-	}, (err, resp) => {
-		if (err) return next(err);
-
-		return generateSession().then(sess => {
-			return generateToken(resp.userCtx, sess);
-		}).then((token) => {
-			res.type("application/jwt").send(token);
-		}).catch(next);
-	});
-})
-
-// renew token
-.put(function(req, res, next) {
-	validateToken(req.jwt, true).then(data => {
-		return generateToken(data, data.session);
-	}).then(token => {
-		res.type("application/jwt").send(token);
-	}).catch(next);
-})
-
-// sign out
-.delete(function(req, res, next) {
-	validateToken(req.jwt, true).then(data => {
-		return Promise.resolve(sessionStore.remove(data.session));
-	}).then(() => {
-		res.send({ ok: true });
-	}).catch(next);
-});
-
-// // create new user
-// app.post("/signup", function(/* req, res, next */) {
-//
-// });
-
-app.use(function(req, res) {
-	res.sendStatus(404);
-});

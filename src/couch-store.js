@@ -1,55 +1,49 @@
-import PouchDB from "pouchdb";
-import parseOptions from "./parse-options";
-import {assign,omit} from "lodash";
+import PouchDB from 'pouchdb';
 
-export default class CouchStore {
-	constructor(options, couchOpts) {
-		options = assign({}, couchOpts, parseOptions(options, {
-			db: "jwt_sessions"
-		}));
+class CouchStore {
+  constructor(client) {
+    this.client = client;
+  }
 
-		this._ready = new Promise((resolve, reject) => {
-			let dburl = options.baseUrl + options.db;
-			let pouchOpts = omit(options, "baseUrl", "db");
-			this.client = new PouchDB(dburl, pouchOpts, (err) => {
-				if (err) reject(err);
-				else resolve();
-			});
-		});
-	}
+  async add(sid) {
+    const exists = await this.exists(sid);
 
-	load() {
-		return this._ready;
-	}
+    if (!exists) {
+      return await this.client.post({
+        _id: sid,
+        created: new Date()
+      });
+    }
+  }
 
-	add(sid) {
-		return this.exists(sid).then(exists => {
-			if (exists) return;
-			return this.client.post({
-				_id: sid,
-				created: new Date()
-			});
-		});
-	}
+  async _get(sid) {
+    const res = await this.client.allDocs({
+      key: sid,
+      limit: 1
+    });
 
-	_get(sid) {
-		return this.client.allDocs({
-			key: sid,
-			limit: 1
-		}).then((res) => {
-			return res.rows.length ? res.rows[0].value : null;
-		});
-	}
+    return res.rows.length && res.rows[0].value;
+  }
 
-	exists(sid) {
-		return this._get(sid).then((d) => {
-			return !!d;
-		});
-	}
+  async exists(sid) {
+    return !!await this._get(sid);
+  }
 
-	remove(sid) {
-		return this._get(sid).then(res => {
-			this.client.remove(sid, res.rev);
-		});
-	}
+  async remove(sid) {
+    const session = await this._get(sid);
+
+    return await this.client.remove(sid, session.rev);
+  }
+}
+
+export default async function createCouchStore({baseUrl, db, ...pouchDbOptions}) {
+  const client = await new Promise((resolve, reject) => {
+    const ret = new PouchDB(
+      `${baseUrl}/${db}`,
+      pouchDbOptions,
+      err => err ? reject(err) : resolve(ret)
+    );
+  });
+
+  return new CouchStore(client);
 }

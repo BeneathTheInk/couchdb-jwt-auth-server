@@ -1,7 +1,7 @@
 BIN = ./node_modules/.bin
 SRC = $(wildcard src/* src/*/*)
 
-build: index.js es6.js cli.js
+build: index.js es6.js cli.js couch-store.js
 
 index.js: src/index.js $(SRC)
 	$(BIN)/rollup $< -c -f cjs > $@
@@ -12,6 +12,9 @@ es6.js: src/index.js $(SRC)
 cli.js: src/cli.js $(SRC)
 	echo "#!/usr/bin/env node" > $@
 	$(BIN)/rollup $< -c -f cjs >> $@
+
+couch-store.js: src/couch-store.js $(SRC)
+	$(BIN)/rollup $< -c -f cjs > $@
 
 clean:
 	rm index.js es6.js cli.js

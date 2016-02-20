@@ -41,9 +41,17 @@ npm i couchdb-jwt --save
 
 To use this library properly, you will need to set the following configuration for CouchDB. Make the secret anything you'd like, just be sure to let this library know what it is.
 
+One thing to note is that this library uses the raw secret whereas `couch_jwt_auth` uses a base64 encoded secret. Here's a way to encode a string to base64
+
+```
+echo -n 'keyboardcat' | openssl base64
+```
+
+The output, in the example `a2V5Ym9hcmRjYXQ=` is what you use for `hs_secret`.
+
 ```ini
 [jwt_auth]
-hs_secret=keyboardcat
+hs_secret=a2V5Ym9hcmRjYXQ=
 username_claim=name
 ```
 
@@ -56,12 +64,19 @@ $ couchdb-jwt [OPTIONS]
 --couchdb <url>         URL to the CouchDB server that manages users and has
                         couch_jwt_auth installed. This should include CouchDB
                         admin credentials.
---secret <secret>       The secret used to sign JWTs. This should match what
-                        the CouchDB server has set for jwt_auth.hs_secret
+--secret <secret>       The secret used to sign JWTs. This should match the
+                        raw value CouchDB server has set for jwt_auth.hs_secret
+                        (remember that hs_secret is base64 encoded in CouchDB's config)
 --expire <exp>          Time in seconds for JWT expiration. Default is 300 (5 min)
 --session.store <name>  The library to use for storing session data. There are
                         two built in options: memory and couch. Additional
                         session options can be passed using the dot syntax.
+```
+
+Example call:
+
+```
+$ couchdb-jwt  --couchdb http://admin:pass@localhost:5984 --secret keyboardcat --session.store couch
 ```
 
 ### Config file
