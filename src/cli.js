@@ -48,7 +48,7 @@ const { storeType } = argv;
 let createSessionStore;
 if (storeType === 'couch') {
   createSessionStore = require('./couch-store');
-} else if (storeType === 'memory' || typeof storyType === 'undefined') {
+} else if (storeType === 'memory' || typeof storeType === 'undefined') {
   createSessionStore = require('./memory-store');
 } else {
   createSessionStore = require(argv['session.store']);
