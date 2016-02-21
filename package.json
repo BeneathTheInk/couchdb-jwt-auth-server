@@ -1,8 +1,9 @@
 {
   "name": "couchdb-jwt",
   "description": "A Node.js server for managing CouchDB authentication through JSON Web Tokens.",
-  "author": "Tyler Johnson <tyler@tylerjohnson.me>",
+  "author": "Beneath the Ink <info@beneaththeink.com>",
   "contributors": [
+    "Tyler Johnson <tyler@tylerjohnson.me>",
     "Darío Javier Cravero <dario@uxtemple.com>"
   ],
   "repository": {
