@@ -11,7 +11,7 @@ export default async function info(req, res, next) {
       },
       session,
       issued: new Date(iat * 1000),
-      expires: new Date(exp * 1000),
+      expires: new Date(exp * 1000)
     });
   } catch(err) {
     console.error(err);

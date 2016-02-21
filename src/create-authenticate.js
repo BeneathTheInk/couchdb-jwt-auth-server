@@ -10,7 +10,7 @@ export default function createAuthenticate(baseUrl) {
           username,
           password
         }
-      }, (err, resp) => err ? reject(err) : resolve(resp))
+      }, (err, resp) => err ? reject(err) : resolve(resp));
     });
-  }
+  };
 }

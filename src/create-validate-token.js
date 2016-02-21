@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-export default function createValidateToken({algorithms, secret, sessionStore}) {
+export default function createValidateToken({algorithms, secret}) {
   return async function validateToken(token, ignoreExpiration=false) {
     const data = jwt.verify(token, secret, {algorithms, ignoreExpiration});
 
@@ -11,5 +11,5 @@ export default function createValidateToken({algorithms, secret, sessionStore}) 
     } else {
       throw new Error('Invalid Session.');
     }
-  }
+  };
 }

@@ -4,10 +4,10 @@ export default function extractJwtFromHeader(req, res, next) {
   const auth = (req.get('Authorization') || '').trim();
 
   if (auth) {
-    const [ _, jwt ] = auth.trim().match(/^Bearer\s*(.*)/);
+    const m = auth.trim().match(/^Bearer\s*(.*)/);
 
-    if (jwt) {
-      req.jwt = jwt;
+    if (m) {
+      req.jwt = m[1];
     }
   }
 
