@@ -19,8 +19,7 @@ couch-store.js: src/couch-store.js $(SRC)
 memory-store.js: src/memory-store.js $(SRC)
 	$(BIN)/rollup $< -c -f cjs > $@
 
-
 clean:
-	rm index.js es6.js cli.js
+	rm index.js es6.js cli.js couch-store.js memory-store.js
 
 .PHONY: build clean
