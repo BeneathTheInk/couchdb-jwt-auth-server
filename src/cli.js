@@ -42,26 +42,11 @@ const VALID = [
   'couchdb',
   'endpoint',
   'expiresIn',
-  'secret'
+  'secret',
+  'session'
 ];
 
-const storeOptions = argv.session || {};
-const storeType = storeOptions.store;
-delete storeOptions.store;
-
-let createSessionStore;
-if (storeType === 'couch') {
-  createSessionStore = require('./couch-store');
-} else if (storeType === 'memory' || typeof storeType === 'undefined') {
-  createSessionStore = require('./memory-store');
-} else {
-  createSessionStore = require(storeType);
-}
-
-const app = createApp({
-  ...pick(argv, VALID),
-  createSessionStore
-});
+const app = createApp(pick(argv, VALID));
 
 app.setup()
   .then(() => {

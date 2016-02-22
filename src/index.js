@@ -12,13 +12,26 @@ import login from './login';
 import logout from './logout';
 import renew from './renew';
 
-export default function createApp({algorithms=['HS256'], createSessionStore, couchdb, endpoint="/", expiresIn='5m', secret, storeOptions}) {
+export default function createApp({algorithms=['HS256'], session={}, couchdb, endpoint="/", expiresIn='5m', secret}) {
   invariant(algorithms, 'missing algorithms');
-  invariant(createSessionStore, 'missing createSessionStore');
+  invariant(session, 'missing session options');
   invariant(endpoint, 'missing endpoint');
   invariant(expiresIn, 'missing expiresIn');
   invariant(secret, 'missing JWT secret');
 
+  // resolve session store
+  const storeType = session.store;
+  delete session.store;
+  let createSessionStore;
+  if (storeType === 'couch') {
+    createSessionStore = require('./couch-store');
+  } else if (storeType === 'memory' || typeof storeType === 'undefined') {
+    createSessionStore = require('./memory-store');
+  } else {
+    createSessionStore = require(storeType);
+  }
+
+  // create express app and parse options
   const app = express();
   const couchOptions = getCouchOptions(couchdb);
 
@@ -32,7 +45,7 @@ export default function createApp({algorithms=['HS256'], createSessionStore, cou
   let _setup;
   app.setup = () => {
     if (_setup) return _setup;
-    return (_setup = Promise.resolve(createSessionStore(storeOptions, couchOptions))
+    return (_setup = Promise.resolve(createSessionStore(session, couchOptions))
       .then((store) => {
         app.sessionStore = store;
       }));
