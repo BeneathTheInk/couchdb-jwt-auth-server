@@ -4,3 +4,4 @@ node_modules
 /es6.js
 /couch-store.js
 /memory-store.js
+config.json

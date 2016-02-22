@@ -1,4 +1,4 @@
-import { pick } from 'lodash';
+import { pick, defaults } from 'lodash';
 import { readFileSync } from 'fs';
 import help from './help';
 import minimist from 'minimist';
@@ -27,7 +27,7 @@ if (argv.version) {
 }
 
 if (argv.config) {
-  Object.assign(argv, JSON.parse(readFileSync(argv.config, 'utf8')));
+  defaults(argv, JSON.parse(readFileSync(argv.config, 'utf8')));
 }
 
 process.env.NODE_ENV = argv.production ? 'production' : (process.env.NODE_ENV || 'development');
