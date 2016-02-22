@@ -5,6 +5,6 @@ export default async function logout(req, res, next) {
 
     res.send({ ok: true });
   } catch(err) {
-    next();
+    next(err);
   }
 }

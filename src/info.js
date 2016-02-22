@@ -14,7 +14,6 @@ export default async function info(req, res, next) {
       expires: new Date(exp * 1000)
     });
   } catch(err) {
-    console.error(err);
-    next();
+    next(err);
   }
 }
