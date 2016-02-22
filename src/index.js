@@ -14,7 +14,6 @@ import renew from './renew';
 
 export default function createApp({algorithms=['HS256'], createSessionStore, couchdb, endpoint="/", expiresIn='5m', secret, storeOptions}) {
   invariant(algorithms, 'missing algorithms');
-  invariant(couchdb, 'missing couchdb');
   invariant(createSessionStore, 'missing createSessionStore');
   invariant(endpoint, 'missing endpoint');
   invariant(expiresIn, 'missing expiresIn');

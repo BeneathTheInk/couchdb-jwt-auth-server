@@ -1,4 +1,6 @@
+import {omit} from "lodash";
 import PouchDB from 'pouchdb';
+import getCouchOptions from './get-couch-options';
 
 class CouchStore {
   constructor(client) {
@@ -36,11 +38,17 @@ class CouchStore {
   }
 }
 
-export default async function createCouchStore({baseUrl, db, ...pouchDbOptions}) {
+export default async function createCouchStore(sessOpts, couchOpts) {
+  const options = {
+    ...couchOpts,
+    ...getCouchOptions(sessOpts),
+    db: "jwt_sessions"
+  };
+
   const client = await new Promise((resolve, reject) => {
     const ret = new PouchDB(
-      `${baseUrl}/${db}`,
-      pouchDbOptions,
+      `${options.baseUrl}/${options.db}`,
+      omit(options, "baseUrl", "db"),
       err => err ? reject(err) : resolve(ret)
     );
   });
