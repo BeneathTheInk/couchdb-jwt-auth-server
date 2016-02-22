@@ -1,3 +1,10 @@
 {
-	"presets": [ "es2015-rollup" ]
+  "plugins": [
+    "external-helpers",
+    "transform-async-to-generator",
+    "transform-es2015-destructuring",
+    "transform-es2015-parameters",
+    "transform-export-extensions",
+    "transform-object-rest-spread"
+  ]
 }

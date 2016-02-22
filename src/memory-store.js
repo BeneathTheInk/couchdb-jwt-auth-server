@@ -1,26 +1,28 @@
-import {has} from "lodash";
+class MemoryStore {
+  constructor() {
+    this.sessions = {};
 
-export default class MemoryStore {
-	constructor() {
-		this.sessions = {};
+    if (process.env.NODE_ENV !== 'development') {
+      console.warn(
+`Please don't use the memory session store outside of local development.
+It does not scale and sessions are not preserved when the app is restarted.`
+      );
+    }
+  }
 
-		if (process.env.NODE_ENV !== "development") {
-			console.warn(`Please don't use the memory session store outside of local development.
-			It does not scale and sessions are not preserved when the app is restarted.`.replace(/^\t+/mg,""));
-		}
-	}
+  add(sid) {
+    this.sessions[sid] = true;
+  }
 
-	load() {}
+  exists(sid) {
+    return !!this.sessions[sid];
+  }
 
-	add(sid) {
-		this.sessions[sid] = true;
-	}
+  remove(sid) {
+    delete this.sessions[sid];
+  }
+}
 
-	exists(sid) {
-		return has(this.sessions, sid);
-	}
-
-	remove(sid) {
-		delete this.sessions[sid];
-	}
+export default function createMemoryStore() {
+  return new MemoryStore();
 }
