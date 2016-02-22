@@ -1,8 +1,10 @@
 import { pick } from 'lodash';
 import { readFileSync } from 'fs';
-import createApp from './index';
 import help from './help';
 import minimist from 'minimist';
+
+// using standard require so rollup doesn't include it
+const createApp = require("./");
 
 let argv = minimist(process.argv.slice(2), {
   string: [ ],
@@ -54,13 +56,13 @@ if (storeType === 'couch') {
   createSessionStore = require(argv['session.store']);
 }
 
-const appOptions = {
+const app = createApp({
   ...pick(argv, VALID),
   createSessionStore
-};
+});
 
-createApp(appOptions).
-  then(app => {
+app.setup()
+  .then(() => {
     const server = app.listen(argv.port || 3000, '127.0.0.1', () => {
       const addr = server.address();
       console.log('HTTP server listening at http://%s:%s', addr.address, addr.port);

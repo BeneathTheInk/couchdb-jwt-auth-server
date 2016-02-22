@@ -12,7 +12,7 @@ import login from './login';
 import logout from './logout';
 import renew from './renew';
 
-export default async function createApp({algorithms=['HS256'], createSessionStore, couchdb, endpoint, expiresIn='5m', secret, storeOptions}) {
+export default function createApp({algorithms=['HS256'], createSessionStore, couchdb, endpoint="/", expiresIn='5m', secret, storeOptions}) {
   invariant(algorithms, 'missing algorithms');
   invariant(couchdb, 'missing couchdb');
   invariant(createSessionStore, 'missing createSessionStore');
@@ -29,13 +29,22 @@ export default async function createApp({algorithms=['HS256'], createSessionStor
   app.generateToken = createGenerateToken({algorithms, expiresIn, secret}).bind(app);
   app.validateToken = createValidateToken({algorithms, secret}).bind(app);
 
-  // set the session store
-  app.sessionStore = await createSessionStore({
-    ...storeOptions,
-    ...couchOptions
-  });
+  // set up the session store
+  let _setup;
+  app.setup = () => {
+    if (_setup) return _setup;
+    return (_setup = Promise.resolve(createSessionStore(storeOptions, couchOptions))
+      .then((store) => {
+        app.sessionStore = store;
+      }));
+  };
 
   app.disable('x-powered-by');
+
+  // app must be setup before routes can be used
+  app.use((req, res, next) => {
+    app.setup().then(() => next(), next);
+  });
 
   // mount the jwt auth logic
   app.route(endpoint)
