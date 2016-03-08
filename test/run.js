@@ -17,6 +17,8 @@ const couchreq = (method, url) => {
         .use(saprefix("http://localhost:16392"));
 };
 
+let clean;
+
 (async () => {
     // create test data directory
     if (await fs.exists(testdir)) await del(testdir);
@@ -48,6 +50,16 @@ const couchreq = (method, url) => {
         })
     ]);
 
+    // method that cleans up always
+    clean = async () => {
+        // kill servers
+        pouchserver.close();
+        jwtserver.close();
+
+        // delete test data directory
+        await del(testdir);
+    };
+
     // create super admin
     await couchreq("PUT", "/_config/admins/admin")
         .type("json")
@@ -76,6 +88,7 @@ const couchreq = (method, url) => {
     // run tests
     tests({
         test,
+        secret: "secret",
         url: "http://localhost:16393",
         username: "testuser",
         password: "test"
@@ -83,14 +96,10 @@ const couchreq = (method, url) => {
 
     // wait for tests to finish
     await finish;
-
-    // kill servers
-    pouchserver.close();
-    jwtserver.close();
-
-    // delete test data directory
-    await del(testdir);
-})().catch(e => {
+})().then(async () => {
+    if (clean) await clean();
+}, async (e) => {
     console.error(e.stack || e);
+    if (clean) await clean();
     process.exit(1);
 });
