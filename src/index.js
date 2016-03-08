@@ -11,6 +11,7 @@ import invariant from 'invariant';
 import login from './login';
 import logout from './logout';
 import renew from './renew';
+import {route as errorRoute,HTTPError} from "./http-error";
 
 export default function createApp({algorithms=['HS256'], session={}, couchdb, endpoint="/", expiresIn='5m', secret}) {
   invariant(algorithms, 'missing algorithms');
@@ -67,7 +68,10 @@ export default function createApp({algorithms=['HS256'], session={}, couchdb, en
     .put(renew);
 
   // default everything else to a 404
-  app.use((req, res) => res.sendStatus(404));
+  app.use((req, res, next) => next(new HTTPError(404)));
+
+  // mount the error route
+  app.use(errorRoute);
 
   return app;
 }
