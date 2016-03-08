@@ -75,3 +75,5 @@ export default function createApp({algorithms=['HS256'], session={}, couchdb, en
 
   return app;
 }
+
+createApp.HTTPError = HTTPError;
