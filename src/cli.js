@@ -1,5 +1,5 @@
-import { pick, defaults } from 'lodash';
-import { readFileSync } from 'fs';
+import { pick, defaultsDeep } from 'lodash';
+import { resolve } from 'path';
 import help from './help';
 import minimist from 'minimist';
 
@@ -11,7 +11,8 @@ let argv = minimist(process.argv.slice(2), {
   boolean: [ 'help', 'version', 'production' ],
   alias: {
     h: 'help', H: 'help',
-    v: 'version', V: 'version'
+    v: 'version', V: 'version',
+    c: "config"
   }
 });
 
@@ -27,7 +28,8 @@ if (argv.version) {
 }
 
 if (argv.config) {
-  defaults(argv, JSON.parse(readFileSync(argv.config, 'utf8')));
+	let cfile = typeof argv.config === "string" && argv.config ? argv.config : "config.json";
+	defaultsDeep(argv, require(resolve(cfile)));
 }
 
 process.env.NODE_ENV = argv.production ? 'production' : (process.env.NODE_ENV || 'development');
