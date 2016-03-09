@@ -20,7 +20,7 @@ couch-store.js: src/couch-store.js $(SRC)
 memory-store.js: src/memory-store.js $(SRC)
 	$(BIN)/rollup $< -c -f cjs > $@
 
-test.js: test/run.js index.js $(TEST)
+test.js: test/run.js index.js couch-store.js memory-store.js $(TEST)
 	$(BIN)/rollup $< -c -f cjs > $@
 
 test: test.js install-self
@@ -34,6 +34,6 @@ clean-self:
 	rm -f node_modules/couchdb-jwt
 
 clean:
-	rm index.js es6.js cli.js couch-store.js memory-store.js
+	rm -f index.js es6.js cli.js couch-store.js memory-store.js test.js
 
-.PHONY: build clean
+.PHONY: build clean test install-self clean-self
