@@ -1,2 +1,5 @@
 .*
 Makefile
+rollup.config.js
+log.txt
+tmp_test_data
