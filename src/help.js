@@ -12,7 +12,7 @@ Usage:
 
   $ couchdb-jwt [OPTIONS]
 
-  --config <file>         A config file with your options. It's a JSON object.
+  -c, --config <file>     A config file with your options. It's a JSON object.
   --couchdb <url>         URL to the CouchDB server that manages users and has
                           couch_jwt_auth installed.
   --secret <secret>       The secret used to sign JWTs. This should match the
@@ -23,5 +23,7 @@ Usage:
                           two built in options: memory and couch. Additional
                           session options can be passed using the dot syntax.
   --endpoint <ep>         The web server mount path. Defaults to '/'.
-  --port <port>           The port to start the HTTP server on. Defaults tp 3000.
+  --port <port>           The port to start the HTTP server on. Defaults to 3000.
+  -h, --help              Show this message.
+  -v, --version           Print the currently installed version of this server.
 `;

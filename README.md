@@ -60,16 +60,20 @@ username_claim=name
 ```text
 $ couchdb-jwt [OPTIONS]
 
---config <file>         A config file with your options. It's a JSON object.
+-c, --config <file>     A config file with your options. It's a JSON object.
 --couchdb <url>         URL to the CouchDB server that manages users and has
                         couch_jwt_auth installed.
 --secret <secret>       The secret used to sign JWTs. This should match the
                         raw value CouchDB server has set for jwt_auth.hs_secret
-                        (remember that hs_secret is base64 encoded in CouchDB's config)
+                        (Note: hs_secret is base64 encoded in CouchDB's config)
 --expire <exp>          Time in seconds for JWT expiration. Default is 300 (5 min)
 --session.store <name>  The library to use for storing session data. There are
                         two built in options: memory and couch. Additional
                         session options can be passed using the dot syntax.
+--endpoint <ep>         The web server mount path. Defaults to '/'.
+--port <port>           The port to start the HTTP server on. Defaults to 3000.
+-h, --help              Show this message.
+-v, --version           Print the currently installed version of this server.
 ```
 
 Example call:
@@ -143,7 +147,7 @@ This servers reveals four REST endpoints under the root path `/`. The endpoint i
 All of the endpoints, except for `POST` require the JSON Web Token to be set in the Authorization header like so:
 
 ```text
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidGVzdDIiLCJyb2xlcyI6W10sInNlc3Npb24iOiIxMDhmNjdiN2JjODlhNzY2YzU4MDcwODc0NzkyZjNkNSIsImlhdCI6MTQ1NjE3MzA0NSwiZXhwIjoxNDU2MTczMzQ1fQ.VPGmFiBveWf1LNY4hqAYolVxFIeqDn4HBWadmHcrQsc
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidCIsInJvbGVzIjpbXSwic2Vzc2lvbiI6ImJiYWI4OTE0NTUxMTY3MmY5NzY0NDJlOTA4NDI3OWM5IiwiaWF0IjoxNDU3NDgzNDU1LCJleHAiOjE0NTc0ODM3NTV9.mkoNf4mKOw8ojLLHmrFOhrFdPBQjoj0xul4uz9kz-LI
 ```
 
 ### `GET /`
@@ -152,19 +156,20 @@ Returns JSON data containing information about the current JWT and session.
 
 ```sh
 curl http://127.0.0.1:3000 \
-  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidGVzdDIiLCJyb2xlcyI6W10sInNlc3Npb24iOiIxMDhmNjdiN2JjODlhNzY2YzU4MDcwODc0NzkyZjNkNSIsImlhdCI6MTQ1NjE3MzA0NSwiZXhwIjoxNDU2MTczMzQ1fQ.VPGmFiBveWf1LNY4hqAYolVxFIeqDn4HBWadmHcrQsc"
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidCIsInJvbGVzIjpbXSwic2Vzc2lvbiI6ImJiYWI4OTE0NTUxMTY3MmY5NzY0NDJlOTA4NDI3OWM5IiwiaWF0IjoxNDU3NDgzNDU1LCJleHAiOjE0NTc0ODM3NTV9.mkoNf4mKOw8ojLLHmrFOhrFdPBQjoj0xul4uz9kz-LI"
 ```
 
 ```json
 {
   "ok": true,
   "userCtx": {
-    "name": "test2",
+    "name": "t",
     "roles": []
   },
-  "session": "108f67b7bc89a766c58070874792f3d5",
-  "issued": "2016-02-22T20:30:45.000Z",
-  "expires": "2016-02-22T20:35:45.000Z"
+  "session": "bbab89145511672f976442e9084279c9",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidCIsInJvbGVzIjpbXSwic2Vzc2lvbiI6ImJiYWI4OTE0NTUxMTY3MmY5NzY0NDJlOTA4NDI3OWM5IiwiaWF0IjoxNDU3NDgzNDU1LCJleHAiOjE0NTc0ODM3NTV9.mkoNf4mKOw8ojLLHmrFOhrFdPBQjoj0xul4uz9kz-LI",
+  "issued": "2016-03-09T00:30:55.000Z",
+  "expires": "2016-03-09T00:35:55.000Z"
 }
 ```
 
@@ -180,7 +185,17 @@ curl http://127.0.0.1:3000 \
 ```
 
 ```text
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidGVzdDIiLCJyb2xlcyI6W10sInNlc3Npb24iOiIxMDhmNjdiN2JjODlhNzY2YzU4MDcwODc0NzkyZjNkNSIsImlhdCI6MTQ1NjE3MzA0NSwiZXhwIjoxNDU2MTczMzQ1fQ.VPGmFiBveWf1LNY4hqAYolVxFIeqDn4HBWadmHcrQsc
+{
+  "ok": true,
+  "userCtx": {
+    "name": "t",
+    "roles": []
+  },
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidCIsInJvbGVzIjpbXSwic2Vzc2lvbiI6ImJiYWI4OTE0NTUxMTY3MmY5NzY0NDJlOTA4NDI3OWM5IiwiaWF0IjoxNDU3NDgzNDU1LCJleHAiOjE0NTc0ODM3NTV9.mkoNf4mKOw8ojLLHmrFOhrFdPBQjoj0xul4uz9kz-LI",
+  "issued": 1457483455,
+  "expires": 1457483755,
+  "session": "bbab89145511672f976442e9084279c9"
+}
 ```
 
 ### `PUT /`
@@ -190,11 +205,21 @@ Generates a new JWT using an existing JWT. This will continue the current sessio
 ```sh
 curl http://127.0.0.1:3000 \
   -X PUT \
-  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidGVzdDIiLCJyb2xlcyI6W10sInNlc3Npb24iOiIxMDhmNjdiN2JjODlhNzY2YzU4MDcwODc0NzkyZjNkNSIsImlhdCI6MTQ1NjE3MzA0NSwiZXhwIjoxNDU2MTczMzQ1fQ.VPGmFiBveWf1LNY4hqAYolVxFIeqDn4HBWadmHcrQsc"
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidCIsInJvbGVzIjpbXSwic2Vzc2lvbiI6ImJiYWI4OTE0NTUxMTY3MmY5NzY0NDJlOTA4NDI3OWM5IiwiaWF0IjoxNDU3NDgzNDU1LCJleHAiOjE0NTc0ODM3NTV9.mkoNf4mKOw8ojLLHmrFOhrFdPBQjoj0xul4uz9kz-LI"
 ```
 
 ```text
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidGVzdDIiLCJyb2xlcyI6W10sImlhdCI6MTQ1NjE3MzEzMiwiZXhwIjoxNDU2MTczNDMyfQ.zNVMMjUaNFJKigmFGsfriGPgTw-15072CmWNNIcLHRI
+{
+  "ok": true,
+  "userCtx": {
+    "name": "t",
+    "roles": []
+  },
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidCIsInJvbGVzIjpbXSwic2Vzc2lvbiI6ImJiYWI4OTE0NTUxMTY3MmY5NzY0NDJlOTA4NDI3OWM5IiwiaWF0IjoxNDU3NDgzNDc0LCJleHAiOjE0NTc0ODM3NzR9.u0PLv9uF5UU4fe8SSpi5fV598dJOTRBKdT6O6UXBvxg",
+  "issued": 1457483474,
+  "expires": 1457483774,
+  "session": "bbab89145511672f976442e9084279c9"
+}
 ```
 
 ### `DELETE /`
@@ -204,7 +229,7 @@ Destroys the current JWT session, invalidating all existing JWTs made with this 
 ```sh
 curl http://127.0.0.1:3000 \
   -X DELETE \
-  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidGVzdDIiLCJyb2xlcyI6W10sInNlc3Npb24iOiIxMDhmNjdiN2JjODlhNzY2YzU4MDcwODc0NzkyZjNkNSIsImlhdCI6MTQ1NjE3MzA0NSwiZXhwIjoxNDU2MTczMzQ1fQ.VPGmFiBveWf1LNY4hqAYolVxFIeqDn4HBWadmHcrQsc"
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidCIsInJvbGVzIjpbXSwic2Vzc2lvbiI6ImJiYWI4OTE0NTUxMTY3MmY5NzY0NDJlOTA4NDI3OWM5IiwiaWF0IjoxNDU3NDgzNDU1LCJleHAiOjE0NTc0ODM3NTV9.mkoNf4mKOw8ojLLHmrFOhrFdPBQjoj0xul4uz9kz-LI"
 ```
 
 ```json
