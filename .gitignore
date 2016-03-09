@@ -5,3 +5,6 @@ node_modules
 /couch-store.js
 /memory-store.js
 config.json
+/test.js
+log.txt
+tmp_test_data

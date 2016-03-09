@@ -17,9 +17,9 @@
   },
   "scripts": {
     "lint": "eslint src/ test/",
-    "build": "make",
-    "prepublish": "npm run build",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "build": "make clean && make",
+    "test": "make test",
+    "autorelease": "autorelease pre && npm publish && autorelease post"
   },
   "dependencies": {
     "body-parser": "^1.15.0",
@@ -38,6 +38,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "autorelease": "^1.5.1",
+    "autorelease-github": "^1.1.1",
+    "autorelease-travis": "^1.2.0",
     "babel": "^6.5.2",
     "babel-cli": "^6.5.1",
     "babel-eslint": "~5.0.0",
@@ -47,10 +50,15 @@
     "babel-plugin-transform-es2015-parameters": "^6.5.0",
     "babel-plugin-transform-export-extensions": "^6.5.0",
     "babel-plugin-transform-object-rest-spread": "^6.5.0",
+    "del": "^2.2.0",
     "eslint": "~2.2.0",
+    "express-pouchdb": "^1.0.3",
+    "fs-promise": "^0.5.0",
     "rollup": "~0.25.3",
     "rollup-plugin-babel": "~2.3.9",
-    "semantic-release": "^4.3.5",
+    "superagent": "^1.8.0-beta.2",
+    "superagent-prefix": "0.0.2",
+    "superagent-promise-plugin": "^2.1.0",
     "tape": "~4.4.0"
   }
 }

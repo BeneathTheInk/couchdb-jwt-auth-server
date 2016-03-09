@@ -10,6 +10,7 @@ export default async function info(req, res, next) {
         roles
       },
       session,
+      token: req.jwt,
       issued: new Date(iat * 1000),
       expires: new Date(exp * 1000)
     });

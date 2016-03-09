@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import HTTPError from "./http-error";
 
 export default function createValidateToken({algorithms, secret}) {
   return async function validateToken(token, ignoreExpiration=false) {
@@ -6,10 +7,10 @@ export default function createValidateToken({algorithms, secret}) {
 
     const exists = await this.sessionStore.exists(data.session);
 
-    if (exists) {
-      return data;
-    } else {
-      throw new Error('Invalid Session.');
+    if (!exists) {
+      throw new HTTPError(401, "Invalid session.", "EBADSESSION");
     }
+
+    return data;
   };
 }
