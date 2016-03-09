@@ -184,7 +184,7 @@ curl http://127.0.0.1:3000 \
   -d password=test
 ```
 
-```text
+```json
 {
   "ok": true,
   "userCtx": {
@@ -208,7 +208,7 @@ curl http://127.0.0.1:3000 \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidCIsInJvbGVzIjpbXSwic2Vzc2lvbiI6ImJiYWI4OTE0NTUxMTY3MmY5NzY0NDJlOTA4NDI3OWM5IiwiaWF0IjoxNDU3NDgzNDU1LCJleHAiOjE0NTc0ODM3NTV9.mkoNf4mKOw8ojLLHmrFOhrFdPBQjoj0xul4uz9kz-LI"
 ```
 
-```text
+```json
 {
   "ok": true,
   "userCtx": {
