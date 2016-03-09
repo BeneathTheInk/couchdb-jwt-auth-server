@@ -43,20 +43,17 @@ export default function createApp({algorithms=['HS256'], session={}, couchdb, en
   app.validateToken = createValidateToken({algorithms, secret}).bind(app);
 
   // set up the session store
-  let _setup;
-  app.setup = () => {
-    if (_setup) return _setup;
-    return (_setup = Promise.resolve(createSessionStore(session, couchOptions))
-      .then((store) => {
-        app.sessionStore = store;
-      }));
-  };
+  let _setup = (async () => {
+    let store = await createSessionStore(session, couchOptions);
+    app.sessionStore = store;
+  })();
+  app.setup = () => _setup;
 
   app.disable('x-powered-by');
 
   // app must be setup before routes can be used
   app.use((req, res, next) => {
-    app.setup().then(() => next(), next);
+    _setup.then(() => next(), next);
   });
 
   // mount the jwt auth logic
