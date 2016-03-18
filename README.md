@@ -1,6 +1,6 @@
 # CouchDB JWT Authentication Server
 
-[![npm](https://img.shields.io/npm/v/couchdb-jwt.svg)](https://www.npmjs.com/package/couchdb-jwt) [![David](https://img.shields.io/david/Beneaththeink/couchdb-jwt-auth-server.svg)](https://david-dm.org/Beneaththeink/couchdb-jwt-auth-server) [![Build Status](https://travis-ci.org/Beneaththeink/couchdb-jwt-auth-server.svg?branch=master)](https://travis-ci.org/Beneaththeink/couchdb-jwt-auth-server)
+[![npm](https://img.shields.io/npm/v/couchdb-jwt.svg)](https://www.npmjs.com/package/couchdb-jwt) [![David](https://img.shields.io/david/BeneathTheInk/couchdb-jwt-auth-server.svg)](https://david-dm.org/BeneathTheInk/couchdb-jwt-auth-server) [![Build Status](https://travis-ci.org/BeneathTheInk/couchdb-jwt-auth-server.svg?branch=master)](https://travis-ci.org/BeneathTheInk/couchdb-jwt-auth-server)
 
 This is an Express app and CLI tool that manages [JSON Web Tokens](https://jwt.io) for a CouchDB server. This acts as a small independent server for generating, renewing and invalidating JWTs that can be used with CouchDB.
 
@@ -105,11 +105,17 @@ $ couchdb-jwt --config config.json
 
 ## API Usage
 
-This library exports a function that creates an Express app which makes it really easy to use.
+This library exports a function that creates an Express app which makes it really easy to use. Pass options directly to the method.
 
 ```js
 var couchdbjwt = require("couchdb-jwt")({
-  secret: "keyboardcat"
+  secret: "keyboardcat",
+  endpoint: "/session",
+  expire: "2m",
+  session: {
+    store: "couch",
+    db: "jwt_sessions"
+  }
 });
 
 couchdbjwt.listen(3000);
@@ -126,19 +132,16 @@ var couchdbjwt = require("couchdb-jwt")({
 app.use("/auth", couchdbjwt);
 ```
 
-Pass options directly to the method. Options are the same as with the CLI tool.
+Here are all of the available options:
 
-```js
-var couchdbjwt = require("couchdb-jwt")({
-  secret: "keyboardcat",
-  endpoint: "/session",
-  expire: "2m",
-  session: {
-    store: "couch",
-    db: "jwt_sessions"
-  }
-});
-```
+- `couchdb` _String_ - The URL of the CouchDB server to authenticate against.
+- `secret` _String_ - The secret to sign tokens with. This should match the couch_jwt_auth configuration in the target CouchDB server. This is the only required option.
+- `endpoint` _String_ - Server mount path. Defaults to `/`.
+- `algorithms` _String[]_ - An array of JSON Web Token hashing algorithms to validate tokens with. The first algorithm is used to sign tokens. Defaults to `["HS256"]`.
+- `expiresIn` _String | Number_ - Amount of time a signed token will be valid for. When a string, this takes any [ms](http://ghub.io) valid value for time. Numbers are interpreted as seconds. Defaults to `"5m"`.
+- `handleErrors` _Boolean_ - Adds server routes for handling errors, including Not Found errors. Disable when using couchdb-jwt with a greater Express app. Defaults to `true`.
+- `session` _Object_ - Session storage options. These values get passed directly to the session store when created.
+  - `session.store` _String | Function_ - The session storage to use. Built-in values include `memory` and `couch`. Other strings are required and used. Functions are considered storage creation methods and are expected to return a storage API object.
 
 ## REST API Endpoints
 

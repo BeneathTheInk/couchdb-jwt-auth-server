@@ -33,7 +33,7 @@ install-self: clean-self
 clean-self:
 	rm -f node_modules/couchdb-jwt
 
-clean:
+clean: clean-self
 	rm -f index.js es6.js cli.js couch-store.js memory-store.js test.js
 
 .PHONY: build clean test install-self clean-self

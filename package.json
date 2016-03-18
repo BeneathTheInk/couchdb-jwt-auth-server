@@ -19,12 +19,12 @@
     "lint": "eslint src/ test/",
     "build": "make clean && make",
     "test": "make test",
+    "prepublish": "npm run build",
     "autorelease": "autorelease pre && npm publish && autorelease post"
   },
   "dependencies": {
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
-    "invariant": "^2.2.0",
     "jsonwebtoken": "^5.5.4",
     "lodash": "4.x",
     "minimist": "^1.2.0",

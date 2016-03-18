@@ -19,12 +19,7 @@ HTTPError.prototype.toString = function() {
 
 export function route(err, req, res, next) {
 	if (!err) return next();
-
-	if (err.name === "TokenExpiredError") {
-		err = new HTTPError(401, "Expired token.", "EEXPTOKEN");
-	} else if (err.name === "JsonWebTokenError") {
-		err = new HTTPError(401, "Invalid token.", "EBADTOKEN");
-	} else if (!(err instanceof HTTPError)) {
+	if (!(err instanceof HTTPError)) {
 		console.error(err.stack || err);
 		err = new HTTPError(500);
 	}
