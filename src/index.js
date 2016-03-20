@@ -2,15 +2,23 @@ import bodyParser from 'body-parser';
 import createAuthenticate from './create-authenticate';
 import createGenerateToken from './create-generate-token';
 import createValidateToken from './create-validate-token';
+import createRefreshRoles from './create-refresh-roles';
 import express from 'express';
 import extractJwtFromHeader from './extract-jwt-from-header';
 import generateSession from './generate-session';
 import getCouchOptions from './get-couch-options';
-import info from './info';
-import login from './login';
-import logout from './logout';
-import renew from './renew';
+import infoRoute from './info-route';
+import loginRoute from './login-route';
+import logoutRoute from './logout-route';
+import renewRoute from './renew-route';
 import {route as errorRoute,HTTPError} from "./http-error";
+import createLogin from './create-login';
+import createLogout from './create-logout';
+import createRenew from './create-renew';
+import respUtils from "./response-utils";
+
+const jsonParser = bodyParser.json();
+const urlEncodedParser = bodyParser.urlencoded({ extended: true });
 
 export default function createApp(opts={}) {
   let {
@@ -20,7 +28,9 @@ export default function createApp(opts={}) {
     endpoint="/",
     expiresIn='5m',
     secret,
-    handleErrors=true
+    handleErrors=true,
+    transform,
+    refreshRoles
   } = opts;
 
   if (!secret) throw new Error("Missing JWT secret.");
@@ -33,8 +43,12 @@ export default function createApp(opts={}) {
     createSessionStore = require('./couch-store');
   } else if (storeType === 'memory' || typeof storeType === 'undefined') {
     createSessionStore = require('./memory-store');
-  } else {
+  } else if (typeof storeType === "string") {
     createSessionStore = require(storeType);
+  } else if (typeof storeType === "function") {
+    createSessionStore = storeType;
+  } else {
+    throw new Error("Expecting function or string for session storage.");
   }
 
   // create express app and parse options
@@ -47,6 +61,10 @@ export default function createApp(opts={}) {
   app.generateSession = generateSession.bind(app);
   app.generateToken = createGenerateToken({algorithms, expiresIn, secret}).bind(app);
   app.validateToken = createValidateToken({algorithms, secret}).bind(app);
+  app.refreshRoles = createRefreshRoles(refreshRoles, couchOptions).bind(app);
+  app.login = createLogin().bind(app);
+  app.logout = createLogout().bind(app);
+  app.renew = createRenew().bind(app);
 
   // set up the session store
   let _setup = (async () => {
@@ -62,11 +80,12 @@ export default function createApp(opts={}) {
 
   // mount the jwt auth logic
   app.route(endpoint)
+    .all(respUtils({transform}))
     .all(extractJwtFromHeader)
-    .delete(logout)
-    .get(info)
-    .post(bodyParser.json(), bodyParser.urlencoded({ extended: true }), login)
-    .put(renew);
+    .delete(logoutRoute)
+    .get(infoRoute)
+    .post(jsonParser, urlEncodedParser, loginRoute)
+    .put(renewRoute);
 
   // default error handling API
   // can be disabled when used with a greater express app
