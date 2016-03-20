@@ -3,13 +3,8 @@ import HTTPError from "./http-error";
 
 function defaultTransform({name,roles,session,token,iat,exp}) {
   return {
-    ok: true,
-    userCtx: {
-      name,
-      roles
-    },
-    session,
-    token: token,
+    userCtx: { name, roles },
+    session, token,
     issued: new Date(iat * 1000),
     expires: new Date(exp * 1000)
   };
