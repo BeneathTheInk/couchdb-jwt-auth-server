@@ -140,6 +140,7 @@ Here are all of the available options:
 - `algorithms` _String[]_ - An array of JSON Web Token hashing algorithms to validate tokens with. The first algorithm is used to sign tokens. Defaults to `["HS256"]`.
 - `expiresIn` _String | Number_ - Amount of time a signed token will be valid for. When a string, this takes any [ms](http://ghub.io) valid value for time. Numbers are interpreted as seconds. Defaults to `"5m"`.
 - `handleErrors` _Boolean_ - Adds server routes for handling errors, including Not Found errors. Disable when using couchdb-jwt with a greater Express app. Defaults to `true`.
+- `transform` _Function_ - A method that transforms the JWT payload into response data.
 - `session` _Object_ - Session storage options. These values get passed directly to the session store when created.
   - `session.store` _String | Function_ - The session storage to use. Built-in values include `memory` and `couch`. Other strings are required and used. Functions are considered storage creation methods and are expected to return a storage API object.
 
@@ -237,7 +238,15 @@ curl http://127.0.0.1:3000 \
 
 ```json
 {
-  "ok": true
+  "ok": true,
+  "userCtx": {
+    "name": "t",
+    "roles": []
+  },
+  "session": "468fc41ceb02d0bb4e71f26e8e0ce217",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidCIsInJvbGVzIjpbXSwic2Vzc2lvbiI6IjQ2OGZjNDFjZWIwMmQwYmI0ZTcxZjI2ZThlMGNlMjE3IiwiaWF0IjoxNDU3NDg0MDE3LCJleHAiOjE0NTc0ODQzMTd9.9OjtQQ9ocpDx5ES9sFRgUxbjYNTBt1uX7vD_Lkj3SPg",
+  "issued": "2016-03-09T00:40:17.000Z",
+  "expires": "2016-03-09T00:45:17.000Z"
 }
 ```
 
