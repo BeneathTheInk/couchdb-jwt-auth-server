@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import createAuthenticate from './create-authenticate';
 import createGenerateToken from './create-generate-token';
 import createValidateToken from './create-validate-token';
+import createRefreshRoles from './create-refresh-roles';
 import express from 'express';
 import extractJwtFromHeader from './extract-jwt-from-header';
 import generateSession from './generate-session';
@@ -28,7 +29,8 @@ export default function createApp(opts={}) {
     expiresIn='5m',
     secret,
     handleErrors=true,
-    transform
+    transform,
+    refreshRoles
   } = opts;
 
   if (!secret) throw new Error("Missing JWT secret.");
@@ -59,6 +61,7 @@ export default function createApp(opts={}) {
   app.generateSession = generateSession.bind(app);
   app.generateToken = createGenerateToken({algorithms, expiresIn, secret}).bind(app);
   app.validateToken = createValidateToken({algorithms, secret}).bind(app);
+  app.refreshRoles = createRefreshRoles(refreshRoles, couchOptions).bind(app);
   app.login = createLogin().bind(app);
   app.logout = createLogout().bind(app);
   app.renew = createRenew().bind(app);
