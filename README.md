@@ -143,6 +143,7 @@ Here are all of the available options:
 - `transform` _Function_ - A method that transforms the JWT payload into response data.
 - `session` _Object_ - Session storage options. These values get passed directly to the session store when created.
   - `session.store` _String | Function_ - The session storage to use. Built-in values include `memory` and `couch`. Other strings are required and used. Functions are considered storage creation methods and are expected to return a storage API object.
+- `refreshRoles` _Function | Boolean_ - A method that is called on every token renewal that should return an array of updated user roles. This method is called with the JWT payload data and the parsed CouchDB connection options. By default, this method attempts to use the passed JWT to fetch the user's document for updated roles and will return the original role set if it fails. Set to `false` to disable role refresh and always use the original roles.
 
 ## REST API Endpoints
 
