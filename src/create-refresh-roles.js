@@ -8,8 +8,6 @@ async function defaultRefreshRoles({name,roles,token}, {baseUrl}) {
 
     return body.roles;
   } catch(e) {
-    let resp = e.response;
-    if (!resp) throw e;
     return roles;
   }
 }
