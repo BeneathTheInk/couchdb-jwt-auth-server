@@ -2,13 +2,10 @@ BIN = ./node_modules/.bin
 SRC = $(wildcard src/* src/*/*)
 TEST = $(wildcard test/* test/*/*)
 
-build: index.js es6.js cli.js couch-store.js memory-store.js empty-store.js
+build: index.js cli.js couch-store.js memory-store.js empty-store.js
 
 index.js: src/index.js $(SRC)
 	$(BIN)/rollup $< -c -f cjs > $@
-
-es6.js: src/index.js $(SRC)
-	TARGET=es6 $(BIN)/rollup $< -c -f es6 > $@
 
 cli.js: src/cli.js $(SRC)
 	echo "#!/usr/bin/env node" > $@
@@ -30,6 +27,6 @@ test: test.js
 	node $<
 
 clean:
-	rm -f index.js es6.js cli.js couch-store.js memory-store.js empty-store.js test.js
+	rm -f index.js cli.js couch-store.js memory-store.js empty-store.js test.js
 
 .PHONY: build clean test
