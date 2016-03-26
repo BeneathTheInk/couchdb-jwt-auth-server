@@ -1,7 +1,10 @@
 // fetch/verify existing JWT
 export async function info(req, res, next) {
   try {
-    const data = await req.app.validateToken(req.jwt);
+    const data = await req.app.validateToken(req.jwt, {
+      allowNoSession: true,
+      ignoreExpiration: false
+    });
     res.ok(data);
   } catch(err) {
     next(err);
@@ -12,7 +15,7 @@ export async function login(req, res, next) {
   try {
     const password = req.body.password || req.body.pass;
     const username = req.body.username || req.body.name;
-    const result = await req.app.login(username, password);
+    const result = await req.app.login(username, password, req.body);
     res.ok(result);
   } catch(err) {
     next(err);

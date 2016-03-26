@@ -56,7 +56,9 @@ export default function(couchOpts={}, opts={}) {
     return sid;
   };
 
-  api.validateToken = async function validateToken(token, ignoreExpiration=false) {
+  api.validateToken = async function validateToken(token, opts={}) {
+    let { allowNoSession=false, ignoreExpiration } = opts;
+    
     // decode data without verifying to check the session first
     const data = jwt.decode(token);
     if (!data) {
@@ -64,14 +66,21 @@ export default function(couchOpts={}, opts={}) {
     }
 
     // ensure session id exists
-    const exists = await this.sessionStore.exists(data.session);
-    if (!exists) {
-      throw new HTTPError(401, "Invalid session.", "EBADSESSION");
+    if (data.session) {
+      const exists = await this.sessionStore.exists(data.session);
+      if (!exists) {
+        throw new HTTPError(401, "Invalid session.", "EBADSESSION");
+      }
+    } else if (!allowNoSession) {
+      throw new HTTPError(401, "Missing session id.", "EBADSESSION");
     }
 
     // verify the token
     try {
-      jwt.verify(token, secret, {algorithms, ignoreExpiration});
+      jwt.verify(token, secret, {
+        algorithms,
+        ignoreExpiration: ignoreExpiration != null ? ignoreExpiration : Boolean(data.session)
+      });
     } catch(e) {
       if (e.name === "TokenExpiredError") {
         throw new HTTPError(401, "Expired token.", "EEXPTOKEN");
@@ -93,20 +102,22 @@ export default function(couchOpts={}, opts={}) {
     return data.roles;
   };
 
-  api.login = async function login(username, password) {
+  api.login = async function login(username, password, opts={}) {
+    let { session: enableSession=true } = opts;
     const response = await this.authenticate(username, password);
-    const session = await this.generateSession();
+    let session;
+    if (enableSession) session = await this.generateSession();
     return this.generateToken(response.userCtx, session);
   };
 
   api.logout = async function logout(token) {
-    const data = await this.validateToken(token, true);
-    await this.sessionStore.remove(data.session);
+    const data = await this.validateToken(token);
+    if (data.session) await this.sessionStore.remove(data.session);
     return data;
   };
 
   api.renew = async function renew(token) {
-    const data = await this.validateToken(token, true);
+    const data = await this.validateToken(token);
     data.roles = await this.refreshRoles(data);
     return this.generateToken(data, data.session);
   };
