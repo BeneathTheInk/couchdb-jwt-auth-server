@@ -18,7 +18,7 @@
   "scripts": {
     "lint": "eslint src/ test/",
     "build": "make clean && make",
-    "test": "make test",
+    "test": "bin/test.sh",
     "prepublish": "npm run build",
     "autorelease": "autorelease pre && npm publish && autorelease post"
   },
@@ -36,7 +36,6 @@
     "autorelease-github": "^1.1.1",
     "autorelease-travis": "^1.2.0",
     "babel": "^6.5.2",
-    "babel-cli": "^6.5.1",
     "babel-eslint": "~5.0.0",
     "babel-plugin-external-helpers": "^6.5.0",
     "babel-plugin-transform-async-to-generator": "^6.5.0",
@@ -44,21 +43,22 @@
     "babel-plugin-transform-es2015-parameters": "^6.5.0",
     "babel-plugin-transform-export-extensions": "^6.5.0",
     "babel-plugin-transform-object-rest-spread": "^6.5.0",
-    "del": "^2.2.0",
     "eslint": "~2.2.0",
-    "express-pouchdb": "^1.0.3",
-    "fs-promise": "^0.5.0",
+    "express-jwt-pouchdb": "^1.1.0",
     "rollup": "~0.25.3",
     "rollup-plugin-babel": "~2.3.9",
-    "superagent-prefix": "0.0.2",
-    "superagent-promise-plugin": "^2.1.0",
+    "supertest": "^1.2.0",
     "tape": "~4.4.0"
   },
   "keywords": [
     "couchdb",
     "jsonwebtoken",
     "jwt",
-    "authentication"
+    "authentication",
+    "pouchdb",
+    "auth",
+    "token",
+    "session"
   ],
   "license": "MIT"
 }
