@@ -2,7 +2,7 @@ BIN = ./node_modules/.bin
 SRC = $(wildcard src/* src/*/*)
 TEST = $(wildcard test/* test/*/*)
 
-build: index.js es6.js cli.js couch-store.js memory-store.js
+build: index.js es6.js cli.js couch-store.js memory-store.js empty-store.js
 
 index.js: src/index.js $(SRC)
 	$(BIN)/rollup $< -c -f cjs > $@
@@ -23,13 +23,13 @@ memory-store.js: src/memory-store.js $(SRC)
 empty-store.js: src/empty-store.js $(SRC)
 	$(BIN)/rollup $< -c -f cjs > $@
 
-test.js: test/index.js index.js couch-store.js memory-store.js $(TEST)
+test.js: test/index.js index.js couch-store.js memory-store.js empty-store.js $(TEST)
 	$(BIN)/rollup $< -c -f cjs > $@
 
 test: test.js
 	node $<
 
 clean:
-	rm -f index.js es6.js cli.js couch-store.js memory-store.js test.js
+	rm -f index.js es6.js cli.js couch-store.js memory-store.js empty-store.js test.js
 
 .PHONY: build clean test
