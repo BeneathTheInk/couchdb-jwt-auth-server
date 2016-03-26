@@ -1,21 +1,11 @@
 import bodyParser from 'body-parser';
-import createAuthenticate from './create-authenticate';
-import createGenerateToken from './create-generate-token';
-import createValidateToken from './create-validate-token';
-import createRefreshRoles from './create-refresh-roles';
 import express from 'express';
-import extractJwtFromHeader from './extract-jwt-from-header';
-import generateSession from './generate-session';
 import getCouchOptions from './get-couch-options';
-import infoRoute from './info-route';
-import loginRoute from './login-route';
-import logoutRoute from './logout-route';
-import renewRoute from './renew-route';
+import * as routes from './routes';
 import {route as errorRoute,HTTPError} from "./http-error";
-import createLogin from './create-login';
-import createLogout from './create-logout';
-import createRenew from './create-renew';
 import respUtils from "./response-utils";
+import createAPI from "./api";
+import {forEach} from "lodash";
 
 const jsonParser = bodyParser.json();
 const urlEncodedParser = bodyParser.urlencoded({ extended: true });
@@ -41,6 +31,8 @@ export default function createApp(opts={}) {
   let createSessionStore;
   if (storeType === 'couch') {
     createSessionStore = require('./couch-store');
+  } else if (storeType === 'empty') {
+    createSessionStore = require('./empty-store');
   } else if (storeType === 'memory' || typeof storeType === 'undefined') {
     createSessionStore = require('./memory-store');
   } else if (typeof storeType === "string") {
@@ -57,14 +49,14 @@ export default function createApp(opts={}) {
   app.disable('x-powered-by');
 
   // set a few helpers on the app
-  app.authenticate = createAuthenticate(couchOptions.baseUrl).bind(app);
-  app.generateSession = generateSession.bind(app);
-  app.generateToken = createGenerateToken({algorithms, expiresIn, secret}).bind(app);
-  app.validateToken = createValidateToken({algorithms, secret}).bind(app);
-  app.refreshRoles = createRefreshRoles(refreshRoles, couchOptions).bind(app);
-  app.login = createLogin().bind(app);
-  app.logout = createLogout().bind(app);
-  app.renew = createRenew().bind(app);
+  const api = createAPI(couchOptions, {
+    algorithms, expiresIn, secret, refreshRoles
+  });
+
+  forEach(api, (fn, name) => {
+    if (typeof fn !== "function") return;
+    app[name] = fn.bind(app);
+  });
 
   // set up the session store
   let _setup = (async () => {
@@ -81,11 +73,11 @@ export default function createApp(opts={}) {
   // mount the jwt auth logic
   app.route(endpoint)
     .all(respUtils({transform}))
-    .all(extractJwtFromHeader)
-    .delete(logoutRoute)
-    .get(infoRoute)
-    .post(jsonParser, urlEncodedParser, loginRoute)
-    .put(renewRoute);
+    .all(routes.extractJwtFromHeader)
+    .delete(routes.logout)
+    .get(routes.info)
+    .post(jsonParser, urlEncodedParser, routes.login)
+    .put(routes.renew);
 
   // default error handling API
   // can be disabled when used with a greater express app
