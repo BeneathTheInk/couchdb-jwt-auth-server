@@ -20,6 +20,9 @@ couch-store.js: src/couch-store.js $(SRC)
 memory-store.js: src/memory-store.js $(SRC)
 	$(BIN)/rollup $< -c -f cjs > $@
 
+empty-store.js: src/empty-store.js $(SRC)
+	$(BIN)/rollup $< -c -f cjs > $@
+
 test.js: test/index.js index.js couch-store.js memory-store.js $(TEST)
 	$(BIN)/rollup $< -c -f cjs > $@
 

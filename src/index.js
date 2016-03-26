@@ -31,6 +31,8 @@ export default function createApp(opts={}) {
   let createSessionStore;
   if (storeType === 'couch') {
     createSessionStore = require('./couch-store');
+  } else if (storeType === 'empty') {
+    createSessionStore = require('./empty-store');
   } else if (storeType === 'memory' || typeof storeType === 'undefined') {
     createSessionStore = require('./memory-store');
   } else if (typeof storeType === "string") {
