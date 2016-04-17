@@ -2,8 +2,7 @@
 export async function info(req, res, next) {
   try {
     const data = await req.app.validateToken(req.jwt, {
-      allowNoSession: true,
-      ignoreExpiration: false
+      ignoreExpiration: true
     });
     res.ok(data);
   } catch(err) {

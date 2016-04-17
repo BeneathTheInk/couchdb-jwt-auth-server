@@ -67,28 +67,6 @@ test("signs in and responds with application/jwt when accepted", async (t) => {
 	}
 });
 
-test("sign in can create a session-less token", async (t) => {
-	try {
-		t.plan(3);
-		const request = supertest(createApp());
-
-		let {text} = await request.post("/")
-			.accept("application/jwt")
-			.buffer()
-			.send({ username, password, session: false })
-			.expect(200);
-
-		let payload = verify(text);
-		t.equals(payload.name, username, "has correct username");
-		t.notOk(payload.session, "does not have a session id");
-		t.ok(payload.exp, "expires");
-	} catch(e) {
-		t.error(e);
-	} finally {
-		t.end();
-	}
-});
-
 test("fails to sign in with incorrect credentials", async (t) => {
 	try {
 		t.plan(3);
@@ -176,31 +154,6 @@ test("renews token, responding with application/jwt when accepted", async (t) =>
 	}
 });
 
-test("fails to renew a session-less token", async (t) => {
-	try {
-		t.plan(3);
-		const request = supertest(createApp());
-
-		let {text:token} = await request.post("/")
-			.accept("application/jwt")
-			.buffer()
-			.send({ username, password, session: false })
-			.expect(200);
-
-		let {body} = await request.put("/")
-			.set("Authorization", "Bearer " + token)
-			.expect(401);
-
-		t.ok(body.error, "renewing results in error");
-		t.equals(body.status, 401, "is unauthorized error");
-		t.equals(body.code, "EBADSESSION", "has EBADSESSION code");
-	} catch(e) {
-		t.error(e);
-	} finally {
-		t.end();
-	}
-});
-
 test("gets token information", async (t) => {
 	try {
 		t.plan(5);
@@ -253,31 +206,6 @@ test("signs out with token", async (t) => {
 		t.ok(errbody.error, "reusing token results in error");
 		t.equals(errbody.status, 401, "is unauthorized error");
 		t.equals(errbody.code, "EBADSESSION", "has EBADSESSION code");
-	} catch(e) {
-		t.error(e);
-	} finally {
-		t.end();
-	}
-});
-
-test("fails to signout with a session-less token", async (t) => {
-	try {
-		t.plan(3);
-		const request = supertest(createApp());
-
-		let {text:token} = await request.post("/")
-			.accept("application/jwt")
-			.buffer()
-			.send({ username, password, session: false })
-			.expect(200);
-
-		let {body} = await request.delete("/")
-			.set("Authorization", "Bearer " + token)
-			.expect(401);
-
-		t.ok(body.error, "signing out results in error");
-		t.equals(body.status, 401, "is unauthorized error");
-		t.equals(body.code, "EBADSESSION", "has EBADSESSION code");
 	} catch(e) {
 		t.error(e);
 	} finally {

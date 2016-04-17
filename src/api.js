@@ -57,8 +57,8 @@ export default function(couchOpts={}, opts={}) {
   };
 
   api.validateToken = async function validateToken(token, opts={}) {
-    let { allowNoSession=false, ignoreExpiration } = opts;
-    
+    let { ignoreExpiration=false } = opts;
+
     // decode data without verifying to check the session first
     const data = jwt.decode(token);
     if (!data) {
@@ -71,7 +71,7 @@ export default function(couchOpts={}, opts={}) {
       if (!exists) {
         throw new HTTPError(401, "Invalid session.", "EBADSESSION");
       }
-    } else if (!allowNoSession) {
+    } else {
       throw new HTTPError(401, "Missing session id.", "EBADSESSION");
     }
 
@@ -79,7 +79,7 @@ export default function(couchOpts={}, opts={}) {
     try {
       jwt.verify(token, secret, {
         algorithms,
-        ignoreExpiration: ignoreExpiration != null ? ignoreExpiration : Boolean(data.session)
+        ignoreExpiration
       });
     } catch(e) {
       if (e.name === "TokenExpiredError") {
@@ -102,17 +102,15 @@ export default function(couchOpts={}, opts={}) {
     return data.roles;
   };
 
-  api.login = async function login(username, password, opts={}) {
-    let { session: enableSession=true } = opts;
+  api.login = async function login(username, password) {
     const response = await this.authenticate(username, password);
-    let session;
-    if (enableSession) session = await this.generateSession();
+    const session = await this.generateSession();
     return this.generateToken(response.userCtx, session);
   };
 
   api.logout = async function logout(token) {
     const data = await this.validateToken(token);
-    if (data.session) await this.sessionStore.remove(data.session);
+    await this.sessionStore.remove(data.session);
     return data;
   };
 
