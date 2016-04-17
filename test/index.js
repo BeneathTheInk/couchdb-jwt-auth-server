@@ -5,22 +5,29 @@ const couchdbjwt = require("./");
 
 const username = process.env.COUCHDB_USER;
 const password = process.env.COUCHDB_PASS;
-const app = couchdbjwt({
-	couchdb: process.env.COUCHDB_URL,
-	secret: process.env.COUCHDB_SECRET
-});
 
-const request = supertest(app);
+if (!process.env.NODE_ENV) {
+	process.env.NODE_ENV = "development";
+}
 
-const verify = (token) => {
+function createApp(opts) {
+	return couchdbjwt({
+		couchdb: process.env.COUCHDB_URL,
+		secret: process.env.COUCHDB_SECRET,
+		...opts
+	});
+}
+
+function verify(token) {
 	return jwt.verify(token, process.env.COUCHDB_SECRET, {
 		algorithms: [ "HS256" ]
 	});
-};
+}
 
 test("signs in and responds with token", async (t) => {
 	try {
 		t.plan(4);
+		const request = supertest(createApp());
 
 		let {body} = await request.post("/")
 			.send({ username, password })
@@ -41,6 +48,7 @@ test("signs in and responds with token", async (t) => {
 test("signs in and responds with application/jwt when accepted", async (t) => {
 	try {
 		t.plan(3);
+		const request = supertest(createApp());
 
 		let {text} = await request.post("/")
 			.accept("application/jwt")
@@ -62,6 +70,7 @@ test("signs in and responds with application/jwt when accepted", async (t) => {
 test("sign in can create a session-less token", async (t) => {
 	try {
 		t.plan(3);
+		const request = supertest(createApp());
 
 		let {text} = await request.post("/")
 			.accept("application/jwt")
@@ -83,6 +92,7 @@ test("sign in can create a session-less token", async (t) => {
 test("fails to sign in with incorrect credentials", async (t) => {
 	try {
 		t.plan(3);
+		const request = supertest(createApp());
 
 		let {body} = await request.post("/")
 			.send({ username: "notauser", password: "notapass" })
@@ -101,6 +111,7 @@ test("fails to sign in with incorrect credentials", async (t) => {
 test("renews token, responding with new token", async (t) => {
 	try {
 		t.plan(8);
+		const request = supertest(createApp());
 		let token, session;
 
 		let {body:postbody} = await request.post("/")
@@ -134,6 +145,7 @@ test("renews token, responding with new token", async (t) => {
 test("renews token, responding with application/jwt when accepted", async (t) => {
 	try {
 		t.plan(6);
+		const request = supertest(createApp());
 		let token, session;
 
 		let {body} = await request.post("/")
@@ -167,6 +179,7 @@ test("renews token, responding with application/jwt when accepted", async (t) =>
 test("fails to renew a session-less token", async (t) => {
 	try {
 		t.plan(3);
+		const request = supertest(createApp());
 
 		let {text:token} = await request.post("/")
 			.accept("application/jwt")
@@ -191,6 +204,7 @@ test("fails to renew a session-less token", async (t) => {
 test("gets token information", async (t) => {
 	try {
 		t.plan(5);
+		const request = supertest(createApp());
 
 		let {body:postbody} = await request.post("/")
 			.send({ username, password })
@@ -216,6 +230,7 @@ test("gets token information", async (t) => {
 test("signs out with token", async (t) => {
 	try {
 		t.plan(6);
+		const request = supertest(createApp());
 		let token;
 
 		let {body:postbody} = await request.post("/")
@@ -248,6 +263,7 @@ test("signs out with token", async (t) => {
 test("fails to signout with a session-less token", async (t) => {
 	try {
 		t.plan(3);
+		const request = supertest(createApp());
 
 		let {text:token} = await request.post("/")
 			.accept("application/jwt")
@@ -272,6 +288,7 @@ test("fails to signout with a session-less token", async (t) => {
 test("responds with unauthorized error when token is missing", async (t) => {
 	try {
 		t.plan(3);
+		const request = supertest(createApp());
 
 		let {body} = await request.get("/").expect(401);
 
@@ -288,6 +305,7 @@ test("responds with unauthorized error when token is missing", async (t) => {
 test("responds with invalid token error when token is invalid", async (t) => {
 	try {
 		t.plan(3);
+		const request = supertest(createApp());
 
 		let {body} = await request.get("/")
 			.set("Authorization", "Bearer notavalidtoken")
