@@ -4,6 +4,7 @@ node_modules/
 /es6.js
 /couch-store.js
 /memory-store.js
+/empty-store.js
 /test.js
 config.json
 log.txt

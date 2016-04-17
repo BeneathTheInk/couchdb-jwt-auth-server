@@ -11,10 +11,7 @@
     "url": "https://github.com/BeneathTheInk/couchdb-jwt-auth-server.git"
   },
   "main": "index.js",
-  "jsnext:main": "es6.js",
-  "bin": {
-    "couchdb-jwt": "cli.js"
-  },
+  "bin": "cli.js",
   "scripts": {
     "lint": "eslint src/ test/",
     "build": "make clean && make",

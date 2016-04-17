@@ -26,6 +26,14 @@ export default function(couchOpts={}, opts={}) {
 
   api.authenticate = async function authenticate(username, password) {
     try {
+      if (typeof username !== "string" || !username) {
+        throw new HTTPError(400, "Missing username.", "EBADINPUT");
+      }
+      
+      if (typeof password !== "string" || !password) {
+        throw new HTTPError(400, "Missing password.", "EBADINPUT");
+      }
+
       let {body} = await superagent.get(`${baseUrl}/_session`)
         .accept("application/json")
         .auth(username, password);
@@ -57,8 +65,8 @@ export default function(couchOpts={}, opts={}) {
   };
 
   api.validateToken = async function validateToken(token, opts={}) {
-    let { allowNoSession=false, ignoreExpiration } = opts;
-    
+    let { ignoreExpiration=false } = opts;
+
     // decode data without verifying to check the session first
     const data = jwt.decode(token);
     if (!data) {
@@ -71,7 +79,7 @@ export default function(couchOpts={}, opts={}) {
       if (!exists) {
         throw new HTTPError(401, "Invalid session.", "EBADSESSION");
       }
-    } else if (!allowNoSession) {
+    } else {
       throw new HTTPError(401, "Missing session id.", "EBADSESSION");
     }
 
@@ -79,7 +87,7 @@ export default function(couchOpts={}, opts={}) {
     try {
       jwt.verify(token, secret, {
         algorithms,
-        ignoreExpiration: ignoreExpiration != null ? ignoreExpiration : Boolean(data.session)
+        ignoreExpiration
       });
     } catch(e) {
       if (e.name === "TokenExpiredError") {
@@ -102,22 +110,20 @@ export default function(couchOpts={}, opts={}) {
     return data.roles;
   };
 
-  api.login = async function login(username, password, opts={}) {
-    let { session: enableSession=true } = opts;
+  api.login = async function login(username, password) {
     const response = await this.authenticate(username, password);
-    let session;
-    if (enableSession) session = await this.generateSession();
+    const session = await this.generateSession();
     return this.generateToken(response.userCtx, session);
   };
 
   api.logout = async function logout(token) {
-    const data = await this.validateToken(token);
-    if (data.session) await this.sessionStore.remove(data.session);
+    const data = await this.validateToken(token, { ignoreExpiration: true });
+    await this.sessionStore.remove(data.session);
     return data;
   };
 
   api.renew = async function renew(token) {
-    const data = await this.validateToken(token);
+    const data = await this.validateToken(token, { ignoreExpiration: true });
     data.roles = await this.refreshRoles(data);
     return this.generateToken(data, data.session);
   };
