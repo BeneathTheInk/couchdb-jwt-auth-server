@@ -1,9 +1,7 @@
 // fetch/verify existing JWT
 export async function info(req, res, next) {
   try {
-    const data = await req.app.validateToken(req.jwt, {
-      ignoreExpiration: true
-    });
+    const data = await req.app.validateToken(req.jwt);
     res.ok(data);
   } catch(err) {
     next(err);

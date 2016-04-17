@@ -109,13 +109,13 @@ export default function(couchOpts={}, opts={}) {
   };
 
   api.logout = async function logout(token) {
-    const data = await this.validateToken(token);
+    const data = await this.validateToken(token, { ignoreExpiration: true });
     await this.sessionStore.remove(data.session);
     return data;
   };
 
   api.renew = async function renew(token) {
-    const data = await this.validateToken(token);
+    const data = await this.validateToken(token, { ignoreExpiration: true });
     data.roles = await this.refreshRoles(data);
     return this.generateToken(data, data.session);
   };
