@@ -80,6 +80,17 @@ test("fails to sign in with incorrect credentials", async (t) => {
 	t.equals(body.code, "EBADAUTH", "error has EBADAUTH code");
 });
 
+test("fails to sign in with missing username and password", async (t) => {
+	t.plan(3);
+	const request = supertest(createApp());
+
+	let {body} = await request.post("/").expect(400);
+
+	t.ok(body.error, "responds with error");
+	t.equals(body.status, 400, "is bad request error");
+	t.equals(body.code, "EBADINPUT", "error has bad input code");
+});
+
 test("renews token, responding with new token", async (t) => {
 	t.plan(8);
 	const request = supertest(createApp());

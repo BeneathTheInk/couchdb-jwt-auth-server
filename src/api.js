@@ -26,6 +26,14 @@ export default function(couchOpts={}, opts={}) {
 
   api.authenticate = async function authenticate(username, password) {
     try {
+      if (typeof username !== "string" || !username) {
+        throw new HTTPError(400, "Missing username.", "EBADINPUT");
+      }
+      
+      if (typeof password !== "string" || !password) {
+        throw new HTTPError(400, "Missing password.", "EBADINPUT");
+      }
+
       let {body} = await superagent.get(`${baseUrl}/_session`)
         .accept("application/json")
         .auth(username, password);
