@@ -18,7 +18,7 @@ Usage:
   --secret <secret>       The secret used to sign JWTs. This should match the
                           raw value CouchDB server has set for jwt_auth.hs_secret
                           (Note: hs_secret is base64 encoded in CouchDB's config)
-  --expire <exp>          Time in seconds for JWT expiration. Default is 300 (5 min)
+  --expiresIn <exp>       Time in seconds for JWT expiration. Default is 300 (5 min)
   --session.store <name>  The library to use for storing session data. There are
                           two built in options: memory and couch. Additional
                           session options can be passed using the dot syntax.

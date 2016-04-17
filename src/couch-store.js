@@ -40,9 +40,9 @@ class CouchStore {
 
 export default async function createCouchStore(sessOpts, couchOpts) {
   const options = {
+    db: "jwt_sessions",
     ...couchOpts,
-    ...getCouchOptions(sessOpts),
-    db: "jwt_sessions"
+    ...getCouchOptions(sessOpts)
   };
 
   const client = await new Promise((resolve, reject) => {
