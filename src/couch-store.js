@@ -38,7 +38,7 @@ class CouchStore {
   }
 }
 
-export default async function createCouchStore(sessOpts, couchOpts) {
+export default function createCouchStore(sessOpts, couchOpts) {
   const options = {
     db: "jwt_sessions",
     ...couchOpts,
