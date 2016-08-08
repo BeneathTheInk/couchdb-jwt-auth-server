@@ -23,30 +23,30 @@
   "dependencies": {
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
-    "jsonwebtoken": "^5.5.4",
+    "jsonwebtoken": "^7.1.7",
     "lodash": "4.x",
     "minimist": "^1.2.0",
     "pouchdb": "^5.2.1",
-    "superagent": "^1.8.1"
+    "superagent": "^2.1.0"
   },
   "devDependencies": {
     "autorelease": "^1.5.1",
     "autorelease-github": "^1.1.1",
     "autorelease-travis": "^1.2.0",
     "babel": "^6.5.2",
-    "babel-eslint": "~5.0.0",
+    "babel-eslint": "^6.1.2",
     "babel-plugin-external-helpers": "^6.5.0",
     "babel-plugin-transform-async-to-generator": "^6.5.0",
     "babel-plugin-transform-es2015-destructuring": "^6.5.0",
     "babel-plugin-transform-es2015-parameters": "^6.5.0",
     "babel-plugin-transform-export-extensions": "^6.5.0",
     "babel-plugin-transform-object-rest-spread": "^6.5.0",
-    "eslint": "~2.2.0",
+    "eslint": "^3.0.0",
     "express-jwt-pouchdb": "^1.1.0",
-    "rollup": "~0.25.3",
-    "rollup-plugin-babel": "~2.3.9",
-    "supertest": "^1.2.0",
-    "tape": "~4.4.0"
+    "rollup": "^0.34.0",
+    "rollup-plugin-babel": "^2.6.1",
+    "supertest": "^2.0.0",
+    "tape": "^4.4.0"
   },
   "keywords": [
     "couchdb",
