@@ -45,13 +45,5 @@ export default async function createCouchStore(sessOpts, couchOpts) {
     ...getCouchOptions(sessOpts)
   };
 
-  const client = await new Promise((resolve, reject) => {
-    const ret = new PouchDB(
-      `${options.baseUrl}/${options.db}`,
-      omit(options, "baseUrl", "db"),
-      err => err ? reject(err) : resolve(ret)
-    );
-  });
-
-  return new CouchStore(client);
+  return new CouchStore(new PouchDB(`${options.baseUrl}/${options.db}`, omit(options, "baseUrl", "db")));
 }
