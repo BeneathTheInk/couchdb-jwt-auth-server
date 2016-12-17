@@ -27,7 +27,7 @@
     "lodash": "4.x",
     "minimist": "^1.2.0",
     "pouchdb": "^5.2.1",
-    "superagent": "^2.1.0"
+    "superagent": "^3.3.1"
   },
   "devDependencies": {
     "autorelease": "^1.5.1",
