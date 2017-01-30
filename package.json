@@ -45,7 +45,7 @@
     "express-jwt-pouchdb": "^1.1.0",
     "rollup": "^0.39.2",
     "rollup-plugin-babel": "^2.6.1",
-    "supertest": "^2.0.0",
+    "supertest": "^3.0.0",
     "tape": "^4.4.0"
   },
   "keywords": [
