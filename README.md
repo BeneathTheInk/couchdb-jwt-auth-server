@@ -14,7 +14,7 @@ CouchDB authentication is really easy to use, but doesn't work great in every si
 
 This is where JSON Web Tokens come into play. They allow you to proxy CouchDB's user sessions while ensuring that they came from trusted source. This way, the token can be sent to any server so it can act on behalf of the user. It works like this:
 
-![](http://www.gliffy.com/go/publish/image/10033617/L.png)
+![](couchdb-jwt-flow.png)
 
 1. A client signs in with this server using a username and password.
 2. The server authenticates with CouchDB and sends a new JSON Web Token back to the client.
