@@ -34,7 +34,7 @@
     "autorelease-github": "^1.1.1",
     "autorelease-travis": "^1.2.0",
     "babel": "^6.5.2",
-    "babel-eslint": "^7.0.0",
+    "babel-eslint": "^7.2.3",
     "babel-plugin-external-helpers": "^6.5.0",
     "babel-plugin-transform-async-to-generator": "^6.16.0",
     "babel-plugin-transform-es2015-destructuring": "^6.5.0",
